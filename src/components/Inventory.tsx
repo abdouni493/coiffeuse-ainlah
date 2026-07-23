@@ -546,7 +546,7 @@ const Inventory: React.FC<InventoryProps> = ({ initialTab = 'suppliers' }) => {
                 className="card-premium p-8 group hover:translate-y-[-4px] transition-all duration-300"
               >
                 <div className="flex items-center gap-5 mb-8">
-                  <div className="w-16 h-16 rounded-2xl bg-accent/10 flex items-center justify-center text-accent shadow-inner group-hover:bg-accent group-hover:text-white transition-all duration-500">
+                  <div className="w-16 h-16 rounded-2xl bg-accent/10 flex items-center justify-center text-accent shadow-inner group-hover:bg-accent group-hover:text-on-accent transition-all duration-500">
                     <Truck size={32} />
                   </div>
                   <div>
@@ -571,13 +571,13 @@ const Inventory: React.FC<InventoryProps> = ({ initialTab = 'suppliers' }) => {
                 <div className="pt-6 border-t border-border flex gap-3">
                   <button 
                     onClick={() => setSupplierHistory({ isOpen: true, supplier: s })}
-                    className="flex-1 py-3 rounded-xl bg-primary-bg text-ink/60 font-bold text-xs hover:bg-accent hover:text-white transition-all duration-300 flex items-center justify-center gap-2 shadow-sm"
+                    className="flex-1 py-3 rounded-xl bg-primary-bg text-ink/60 font-bold text-xs hover:bg-accent hover:text-on-accent transition-all duration-300 flex items-center justify-center gap-2 shadow-sm"
                   >
                     <History size={16} /> Historique
                   </button>
                   <button 
                     onClick={() => openEditSupplier(s)}
-                    className="p-3 rounded-xl bg-primary-bg text-ink/40 hover:text-accent hover:bg-white border border-transparent hover:border-accent/20 transition-all duration-300 shadow-sm"
+                    className="p-3 rounded-xl bg-primary-bg text-ink/40 hover:text-accent hover:bg-surface border border-transparent hover:border-accent/20 transition-all duration-300 shadow-sm"
                   >
                     <Edit2 size={18} />
                   </button>
@@ -756,7 +756,7 @@ const Inventory: React.FC<InventoryProps> = ({ initialTab = 'suppliers' }) => {
                   )}
                   <button 
                     onClick={() => openEditPurchase(p)}
-                    className="flex-1 py-3 rounded-xl bg-primary-bg text-ink/40 hover:text-accent hover:bg-white border border-transparent hover:border-accent/20 transition-all font-bold text-sm flex items-center justify-center gap-2 shadow-sm"
+                    className="flex-1 py-3 rounded-xl bg-primary-bg text-ink/40 hover:text-accent hover:bg-surface border border-transparent hover:border-accent/20 transition-all font-bold text-sm flex items-center justify-center gap-2 shadow-sm"
                   >
                     <Edit2 size={16} /> Éditer
                   </button>
@@ -919,19 +919,19 @@ const Inventory: React.FC<InventoryProps> = ({ initialTab = 'suppliers' }) => {
                 <div className="flex gap-2 mt-auto">
                   <button 
                     onClick={() => setViewingInvoice(invoice)}
-                    className="flex-1 py-3 rounded-xl bg-primary-bg text-ink/40 hover:text-accent hover:bg-white border border-transparent hover:border-accent/20 transition-all font-bold text-sm flex items-center justify-center gap-2 shadow-sm"
+                    className="flex-1 py-3 rounded-xl bg-primary-bg text-ink/40 hover:text-accent hover:bg-surface border border-transparent hover:border-accent/20 transition-all font-bold text-sm flex items-center justify-center gap-2 shadow-sm"
                   >
                     <Eye size={16} /> Détails
                   </button>
                   <button 
                     onClick={() => setEditingInvoice(invoice)}
-                    className="p-3 rounded-xl bg-primary-bg text-ink/40 hover:text-accent hover:bg-white border border-transparent hover:border-accent/20 transition-all shadow-sm"
+                    className="p-3 rounded-xl bg-primary-bg text-ink/40 hover:text-accent hover:bg-surface border border-transparent hover:border-accent/20 transition-all shadow-sm"
                   >
                     <Edit2 size={18} />
                   </button>
                   <button 
                     onClick={() => handlePrint(invoice)}
-                    className="p-3 rounded-xl bg-primary-bg text-ink/40 hover:text-accent hover:bg-white border border-transparent hover:border-accent/20 transition-all shadow-sm"
+                    className="p-3 rounded-xl bg-primary-bg text-ink/40 hover:text-accent hover:bg-surface border border-transparent hover:border-accent/20 transition-all shadow-sm"
                   >
                     <Printer size={18} />
                   </button>
@@ -967,13 +967,13 @@ const Inventory: React.FC<InventoryProps> = ({ initialTab = 'suppliers' }) => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setDeleteConfirm(null)}
-              className="absolute inset-0 bg-ink/60 backdrop-blur-sm"
+              className="absolute inset-0 bg-overlay backdrop-blur-sm"
             />
             <motion.div 
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-md bg-white rounded-[24px] md:rounded-[32px] p-6 md:p-8 shadow-2xl text-center"
+              className="relative w-full max-w-md bg-surface rounded-[24px] md:rounded-[32px] p-6 md:p-8 shadow-2xl text-center"
             >
               <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-red-50 flex items-center justify-center text-red-500 mx-auto mb-6">
                 <AlertCircle size={40} />
@@ -985,7 +985,7 @@ const Inventory: React.FC<InventoryProps> = ({ initialTab = 'suppliers' }) => {
                 </p>
               </div>
               <div className="flex gap-4 pt-4">
-                <button onClick={() => setDeleteConfirm(null)} className="flex-1 py-3 md:py-4 rounded-2xl bg-white border border-border font-bold text-ink/40 hover:text-ink transition-all">Annuler</button>
+                <button onClick={() => setDeleteConfirm(null)} className="flex-1 py-3 md:py-4 rounded-2xl bg-surface border border-border font-bold text-ink/40 hover:text-ink transition-all">Annuler</button>
                 <button 
                   onClick={handleDelete}
                   className="flex-1 py-3 md:py-4 rounded-2xl bg-red-500 text-white font-bold hover:bg-red-600 transition-all shadow-lg shadow-red-500/20"
@@ -1007,13 +1007,13 @@ const Inventory: React.FC<InventoryProps> = ({ initialTab = 'suppliers' }) => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setViewingInvoice(null)}
-              className="absolute inset-0 bg-ink/60 backdrop-blur-sm"
+              className="absolute inset-0 bg-overlay backdrop-blur-sm"
             />
             <motion.div 
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-2xl bg-white rounded-[24px] md:rounded-[32px] shadow-2xl overflow-hidden max-h-[90vh] flex flex-col"
+              className="relative w-full max-w-2xl bg-surface rounded-[24px] md:rounded-[32px] shadow-2xl overflow-hidden max-h-[90vh] flex flex-col"
             >
               <div className="p-6 md:p-8 overflow-y-auto custom-scrollbar">
                 <div className="flex justify-between items-center mb-8">
@@ -1113,7 +1113,7 @@ const Inventory: React.FC<InventoryProps> = ({ initialTab = 'suppliers' }) => {
                     <p className="text-[10px] text-ink/30 uppercase tracking-widest font-bold mb-4">Services Additionnels</p>
                     <div className="space-y-3">
                       {viewingInvoice.services.map((service: any, idx: number) => (
-                        <div key={idx} className="flex justify-between items-center p-3 bg-white rounded-xl border border-border/50">
+                        <div key={idx} className="flex justify-between items-center p-3 bg-surface rounded-xl border border-border/50">
                           <div>
                             <p className="font-medium text-ink text-sm">{service.name}</p>
                             {service.description && <p className="text-xs text-ink/40 mt-0.5">{service.description}</p>}
@@ -1179,13 +1179,13 @@ const Inventory: React.FC<InventoryProps> = ({ initialTab = 'suppliers' }) => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setEditingInvoice(null)}
-              className="absolute inset-0 bg-ink/60 backdrop-blur-sm"
+              className="absolute inset-0 bg-overlay backdrop-blur-sm"
             />
             <motion.div 
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-lg bg-white rounded-[24px] md:rounded-[32px] shadow-2xl overflow-hidden max-h-[90vh] flex flex-col"
+              className="relative w-full max-w-lg bg-surface rounded-[24px] md:rounded-[32px] shadow-2xl overflow-hidden max-h-[90vh] flex flex-col"
             >
               <div className="p-6 md:p-8 overflow-y-auto custom-scrollbar">
                 <div className="flex justify-between items-center mb-8">
@@ -1252,7 +1252,7 @@ const Inventory: React.FC<InventoryProps> = ({ initialTab = 'suppliers' }) => {
                   <div className="flex gap-3 pt-2">
                     <button 
                       onClick={() => setEditingInvoice(null)}
-                      className="flex-1 py-4 bg-white border border-border rounded-2xl font-bold text-ink/40 hover:text-ink transition-all"
+                      className="flex-1 py-4 bg-surface border border-border rounded-2xl font-bold text-ink/40 hover:text-ink transition-all"
                     >
                       Annuler
                     </button>
@@ -1279,13 +1279,13 @@ const Inventory: React.FC<InventoryProps> = ({ initialTab = 'suppliers' }) => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setPaymentModal({ isOpen: false, purchase: null })}
-              className="absolute inset-0 bg-ink/60 backdrop-blur-sm"
+              className="absolute inset-0 bg-overlay backdrop-blur-sm"
             />
             <motion.div 
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-lg bg-white rounded-[24px] md:rounded-[32px] shadow-2xl overflow-hidden"
+              className="relative w-full max-w-lg bg-surface rounded-[24px] md:rounded-[32px] shadow-2xl overflow-hidden"
             >
               <div className="p-6 md:p-8">
                 <div className="flex justify-between items-center mb-8">
@@ -1338,11 +1338,11 @@ const Inventory: React.FC<InventoryProps> = ({ initialTab = 'suppliers' }) => {
                       <div>
                         <p className="text-[10px] text-green-600 uppercase tracking-widest font-bold mb-4">Récapitulatif du Paiement</p>
                         <div className="space-y-3">
-                          <div className="flex justify-between items-center p-3 bg-white/50 rounded-xl">
+                          <div className="flex justify-between items-center p-3 bg-surface/50 rounded-xl">
                             <span className="text-sm text-ink/60">Montant actuel payé</span>
                             <span className="font-bold text-ink">{formatCurrency(paymentModal.purchase.paidAmount)}</span>
                           </div>
-                          <div className="flex justify-between items-center p-3 bg-white/50 rounded-xl">
+                          <div className="flex justify-between items-center p-3 bg-surface/50 rounded-xl">
                             <span className="text-sm text-ink/60">Nouveau paiement</span>
                             <span className="font-bold text-green-600">+ {formatCurrency(parseFloat(paymentAmount || '0'))}</span>
                           </div>
@@ -1364,7 +1364,7 @@ const Inventory: React.FC<InventoryProps> = ({ initialTab = 'suppliers' }) => {
                   <div className="flex gap-3 pt-2">
                     <button 
                       onClick={() => setPaymentModal({ isOpen: false, purchase: null })}
-                      className="flex-1 py-4 bg-white border border-border rounded-2xl font-bold text-ink/40 hover:text-ink transition-all"
+                      className="flex-1 py-4 bg-surface border border-border rounded-2xl font-bold text-ink/40 hover:text-ink transition-all"
                     >
                       Annuler
                     </button>
@@ -1392,13 +1392,13 @@ const Inventory: React.FC<InventoryProps> = ({ initialTab = 'suppliers' }) => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setEditingPurchase(null)}
-              className="absolute inset-0 bg-ink/60 backdrop-blur-sm"
+              className="absolute inset-0 bg-overlay backdrop-blur-sm"
             />
             <motion.div 
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-lg bg-white rounded-[24px] md:rounded-[32px] shadow-2xl overflow-hidden max-h-[90vh] flex flex-col"
+              className="relative w-full max-w-lg bg-surface rounded-[24px] md:rounded-[32px] shadow-2xl overflow-hidden max-h-[90vh] flex flex-col"
             >
               <div className="p-6 md:p-8 overflow-y-auto custom-scrollbar">
                 <div className="flex justify-between items-center mb-8">
@@ -1469,7 +1469,7 @@ const Inventory: React.FC<InventoryProps> = ({ initialTab = 'suppliers' }) => {
                   <div className="flex gap-3 pt-2">
                     <button 
                       onClick={() => setEditingPurchase(null)}
-                      className="flex-1 py-4 bg-white border border-border rounded-2xl font-bold text-ink/40 hover:text-ink transition-all"
+                      className="flex-1 py-4 bg-surface border border-border rounded-2xl font-bold text-ink/40 hover:text-ink transition-all"
                     >
                       Annuler
                     </button>
@@ -1496,13 +1496,13 @@ const Inventory: React.FC<InventoryProps> = ({ initialTab = 'suppliers' }) => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setSupplierHistory({ isOpen: false })}
-              className="absolute inset-0 bg-ink/60 backdrop-blur-sm"
+              className="absolute inset-0 bg-overlay backdrop-blur-sm"
             />
             <motion.div 
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-2xl bg-white rounded-[24px] md:rounded-[32px] shadow-2xl overflow-hidden max-h-[90vh] flex flex-col"
+              className="relative w-full max-w-2xl bg-surface rounded-[24px] md:rounded-[32px] shadow-2xl overflow-hidden max-h-[90vh] flex flex-col"
             >
               <div className="p-6 md:p-8 overflow-y-auto custom-scrollbar">
                 <div className="flex justify-between items-center mb-6 md:mb-8">
@@ -1541,7 +1541,7 @@ const Inventory: React.FC<InventoryProps> = ({ initialTab = 'suppliers' }) => {
 
                 <button 
                   onClick={() => setSupplierHistory({ isOpen: false })}
-                  className="w-full py-3 md:py-4 rounded-2xl bg-white border border-border font-bold text-ink/40 hover:text-ink transition-all mt-8"
+                  className="w-full py-3 md:py-4 rounded-2xl bg-surface border border-border font-bold text-ink/40 hover:text-ink transition-all mt-8"
                 >
                   Fermer
                 </button>

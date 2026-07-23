@@ -183,6 +183,10 @@ export async function fetchReservations(filters?: {
     clientName: r.client_name,
     clientPhone: r.client_phone,
     prestationId: r.prestation_id,
+    // Legacy rows predate multi-prestation support and only have the single id.
+    prestationIds: (Array.isArray(r.prestation_ids) && r.prestation_ids.length > 0)
+      ? r.prestation_ids
+      : (r.prestation_id ? [r.prestation_id] : []),
     serviceIds: r.service_ids || [],
     date: r.date,
     time: r.time,

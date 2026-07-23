@@ -40,13 +40,19 @@ export interface Reservation {
   clientId: string;
   clientName: string;
   clientPhone: string;
+  /** Primary prestation — kept for filters/reports and legacy rows. */
   prestationId: string;
   prestationName?: string;
+  /** All prestations booked on this reservation (includes `prestationId`). */
+  prestationIds: string[];
   serviceIds: string[];
   date: string;
   time: string;
   totalPrice: number;
   paidAmount: number;
+  /** Fidelity reduction granted on this reservation (already deducted from totalPrice). */
+  discountAmount?: number;
+  fidelityApplied?: boolean;
   status: 'pending' | 'finalized' | 'cancelled' | 'completed';
   workerId?: string;
   createdBy: string;
@@ -54,6 +60,15 @@ export interface Reservation {
   finalized_by?: string;
   createdAt?: string;
   isWalkIn?: boolean; // "Sur place": client created & finalized in the same visit
+}
+
+/** Single-row loyalty programme configuration (`fidelity_config`, id = 1). */
+export interface FidelityConfig {
+  enabled: boolean;
+  /** Number of paid visits before a reward visit is granted. */
+  reservations_required: number;
+  reduction_type: 'percentage' | 'fixed';
+  reduction_value: number;
 }
 
 export interface Supplier {

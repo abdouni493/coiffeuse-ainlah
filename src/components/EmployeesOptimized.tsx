@@ -286,7 +286,7 @@ const EmployeesOptimized: React.FC = () => {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 20 }}
-                  className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow p-6"
+                  className="bg-surface rounded-xl shadow-lg hover:shadow-xl transition-shadow p-6"
                 >
                   {/* Employee Info */}
                   <div className="flex items-start justify-between mb-4">
@@ -404,7 +404,7 @@ const EmployeesOptimized: React.FC = () => {
               initial={{ scale: 0.9, y: 20 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.9, y: 20 }}
-              className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8"
+              className="bg-surface rounded-2xl shadow-2xl max-w-md w-full p-8"
               onClick={e => e.stopPropagation()}
             >
               <div className="flex justify-between items-center mb-6">
@@ -543,7 +543,7 @@ const EmployeesOptimized: React.FC = () => {
               initial={{ scale: 0.9, y: 20 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.9, y: 20 }}
-              className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8"
+              className="bg-surface rounded-2xl shadow-2xl max-w-md w-full p-8"
               onClick={e => e.stopPropagation()}
             >
               <div className="flex justify-between items-center mb-6">
@@ -655,7 +655,7 @@ const EmployeesOptimized: React.FC = () => {
               initial={{ scale: 0.9, y: 20 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.9, y: 20 }}
-              className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-8"
+              className="bg-surface rounded-2xl shadow-2xl max-w-sm w-full p-8"
               onClick={e => e.stopPropagation()}
             >
               <div className="flex justify-center mb-4">

@@ -383,11 +383,11 @@ const ProductPurchases: React.FC = () => {
           </h3>
           <div className="flex gap-2">
             <button onClick={() => setViewMode('cards')}
-              className={cn('p-2.5 rounded-xl transition-all', viewMode === 'cards' ? 'bg-accent text-white' : 'bg-white/40 border border-border text-ink/40 hover:text-accent')}>
+              className={cn('p-2.5 rounded-xl transition-all', viewMode === 'cards' ? 'bg-accent text-on-accent' : 'bg-surface/40 border border-border text-ink/40 hover:text-accent')}>
               <LayoutGrid size={18} />
             </button>
             <button onClick={() => setViewMode('table')}
-              className={cn('p-2.5 rounded-xl transition-all', viewMode === 'table' ? 'bg-accent text-white' : 'bg-white/40 border border-border text-ink/40 hover:text-accent')}>
+              className={cn('p-2.5 rounded-xl transition-all', viewMode === 'table' ? 'bg-accent text-on-accent' : 'bg-surface/40 border border-border text-ink/40 hover:text-accent')}>
               <List size={18} />
             </button>
           </div>
@@ -508,13 +508,13 @@ const ProductPurchases: React.FC = () => {
             <motion.div
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               onClick={() => { setShowPurchaseModal(false); resetModal(); }}
-              className="absolute inset-0 bg-ink/40 backdrop-blur-md"
+              className="absolute inset-0 bg-overlay backdrop-blur-md"
             />
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-2xl bg-white rounded-[24px] md:rounded-[32px] shadow-2xl overflow-hidden max-h-[90vh] flex flex-col"
+              className="relative w-full max-w-2xl bg-surface rounded-[24px] md:rounded-[32px] shadow-2xl overflow-hidden max-h-[90vh] flex flex-col"
             >
               {/* Modal header */}
               <div className="p-6 md:p-8 border-b border-border/50 flex items-center justify-between bg-primary-bg/30 flex-shrink-0">
@@ -552,7 +552,7 @@ const ProductPurchases: React.FC = () => {
                       {showDropdown && productResults.length > 0 && (
                         <motion.div
                           initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }}
-                          className="absolute top-full mt-2 left-0 right-0 bg-white border border-border rounded-2xl shadow-2xl z-30 overflow-hidden">
+                          className="absolute top-full mt-2 left-0 right-0 bg-surface border border-border rounded-2xl shadow-2xl z-30 overflow-hidden">
                           {productResults.map(p => (
                             <button key={p.id} onClick={() => selectProduct(p)}
                               className="w-full px-4 py-3 text-left hover:bg-accent/5 border-b border-border/40 last:border-0 flex items-center justify-between gap-4 transition-colors">
@@ -585,7 +585,7 @@ const ProductPurchases: React.FC = () => {
                                 <p className="text-xs text-ink/40 font-mono mt-0.5">{selectedProduct.barcode}</p>
                               )}
                             </div>
-                            <span className="text-xs bg-white border border-border px-2.5 py-1 rounded-lg text-ink/50 flex-shrink-0">
+                            <span className="text-xs bg-surface border border-border px-2.5 py-1 rounded-lg text-ink/50 flex-shrink-0">
                               Stock: {selectedProduct.currentStock} u
                             </span>
                           </div>
@@ -618,7 +618,7 @@ const ProductPurchases: React.FC = () => {
                           </div>
 
                           {/* Sell by detail toggle */}
-                          <div className="p-4 rounded-xl bg-white/70 border border-border/60 space-y-3">
+                          <div className="p-4 rounded-xl bg-surface/70 border border-border/60 space-y-3">
                             <div className="flex items-center justify-between">
                               <div>
                                 <p className="font-semibold text-sm text-ink">Vendre en détail</p>
@@ -628,7 +628,7 @@ const ProductPurchases: React.FC = () => {
                                 onClick={() => setItemForm(f => ({ ...f, sellByDetail: !f.sellByDetail }))}
                                 className={cn('relative w-11 h-6 rounded-full transition-all duration-300 flex-shrink-0',
                                   itemForm.sellByDetail ? 'bg-accent' : 'bg-ink/20')}>
-                                <span className={cn('absolute top-1 w-4 h-4 rounded-full bg-white shadow-sm transition-all duration-300',
+                                <span className={cn('absolute top-1 w-4 h-4 rounded-full bg-surface shadow-sm transition-all duration-300',
                                   itemForm.sellByDetail ? 'left-6' : 'left-1')} />
                               </button>
                             </div>
@@ -662,7 +662,7 @@ const ProductPurchases: React.FC = () => {
 
                           <div className="flex gap-3 pt-1">
                             <button onClick={resetProductForm}
-                              className="px-4 py-2.5 rounded-2xl border border-border text-ink/60 font-medium hover:bg-white/60 transition-all">
+                              className="px-4 py-2.5 rounded-2xl border border-border text-ink/60 font-medium hover:bg-surface/60 transition-all">
                               Annuler
                             </button>
                             <button onClick={addToCart}
@@ -752,7 +752,7 @@ const ProductPurchases: React.FC = () => {
                     </div>
 
                     {/* Payment block */}
-                    <div className="p-5 rounded-2xl bg-ink text-white space-y-4">
+                    <div className="p-5 rounded-2xl bg-panel text-white space-y-4">
                       <p className="text-white/40 text-xs font-bold uppercase tracking-widest">Paiement</p>
                       <div className="flex justify-between items-center">
                         <span className="text-white/60 text-sm">Total commande</span>
@@ -764,17 +764,17 @@ const ProductPurchases: React.FC = () => {
                           <input
                             type="number" min={0} max={totalCart} value={versement}
                             onChange={e => { setVersement(Number(e.target.value)); setVersementEdited(true); }}
-                            className="w-36 px-3 py-2 rounded-xl bg-white/10 text-white text-right border border-white/20 focus:outline-none focus:border-white/50 transition-all"
+                            className="w-36 px-3 py-2 rounded-xl bg-surface/10 text-white text-right border border-border focus:outline-none focus:border-border transition-all"
                           />
                           <button
                             onClick={() => { setVersement(totalCart); setVersementEdited(false); }}
-                            className="text-xs bg-white/10 hover:bg-white/20 px-2.5 py-1.5 rounded-lg text-white/60 transition-all"
+                            className="text-xs bg-surface/10 hover:bg-surface/20 px-2.5 py-1.5 rounded-lg text-white/60 transition-all"
                             title="Payer en totalité">
                             Tout
                           </button>
                         </div>
                       </div>
-                      <div className="pt-3 border-t border-white/10 flex justify-between items-center">
+                      <div className="pt-3 border-t border-border flex justify-between items-center">
                         <span className="text-white/60 text-sm">Reste à payer</span>
                         <div className="text-right">
                           <span className={cn('text-2xl font-bold', reste <= 0 ? 'text-emerald-400' : 'text-red-400')}>
@@ -797,7 +797,7 @@ const ProductPurchases: React.FC = () => {
                   Annuler
                 </button>
                 <button onClick={savePurchase} disabled={isSaving || cart.length === 0}
-                  className="flex-[2] py-4 rounded-2xl bg-accent text-white font-bold shadow-lg shadow-accent/20 hover:bg-accent/90 transition-all disabled:opacity-50 flex items-center justify-center gap-2">
+                  className="flex-[2] py-4 rounded-2xl bg-accent text-on-accent font-bold shadow-lg shadow-accent/20 hover:bg-accent/90 transition-all disabled:opacity-50 flex items-center justify-center gap-2">
                   {isSaving ? <Loader2 size={18} className="animate-spin" /> : <Check size={18} />}
                   {editingPurchaseId ? "Mettre à jour" : "Enregistrer l'achat"}
                 </button>
@@ -815,9 +815,9 @@ const ProductPurchases: React.FC = () => {
         {/* ── Details Modal ── */}
         {modal === 'details' && selectedPurchase && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-ink/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            className="fixed inset-0 bg-overlay backdrop-blur-sm z-50 flex items-center justify-center p-4">
             <motion.div initial={{ scale: 0.95, y: 12 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95, y: 12 }}
-              className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+              className="bg-surface rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
               <div className="p-8 space-y-6">
                 <div className="flex items-start justify-between gap-4">
                   <div>
@@ -920,9 +920,9 @@ const ProductPurchases: React.FC = () => {
           const newRest = Math.max(0, currentRest - payAmount);
           return (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-ink/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+              className="fixed inset-0 bg-overlay backdrop-blur-sm z-50 flex items-center justify-center p-4">
               <motion.div initial={{ scale: 0.92, y: 12 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.92, y: 12 }}
-                className="bg-white rounded-3xl shadow-2xl w-full max-w-md p-8 space-y-6">
+                className="bg-surface rounded-3xl shadow-2xl w-full max-w-md p-8 space-y-6">
                 <div className="flex items-start justify-between">
                   <div>
                     <h3 className="text-xl font-serif font-bold text-ink">Payer la dette</h3>
@@ -1005,9 +1005,9 @@ const ProductPurchases: React.FC = () => {
         {/* ── Delete Modal ── */}
         {modal === 'delete' && selectedPurchase && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-ink/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            className="fixed inset-0 bg-overlay backdrop-blur-sm z-50 flex items-center justify-center p-4">
             <motion.div initial={{ scale: 0.9, y: 12 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 12 }}
-              className="bg-white rounded-3xl shadow-2xl w-full max-w-sm p-8 space-y-6 text-center">
+              className="bg-surface rounded-3xl shadow-2xl w-full max-w-sm p-8 space-y-6 text-center">
               <div className="w-14 h-14 rounded-2xl bg-red-100 flex items-center justify-center mx-auto">
                 <Trash2 className="text-red-500" size={24} />
               </div>

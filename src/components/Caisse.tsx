@@ -183,11 +183,11 @@ const Caisse: React.FC<CaisseProps> = ({ user }) => {
 
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-3">
-        <div className="flex bg-white/60 p-1.5 rounded-2xl border border-border">
+        <div className="flex bg-surface/60 p-1.5 rounded-2xl border border-border">
           {([['today', "Aujourd'hui"], ['week', '7 jours'], ['month', '30 jours'], ['custom', 'Période']] as const).map(([k, lbl]) => (
             <button key={k} onClick={() => setPreset(k)}
               className={cn('px-4 py-2 rounded-xl text-sm font-bold transition-all',
-                preset === k ? 'bg-accent text-white shadow-sm' : 'text-ink/50 hover:text-accent')}>
+                preset === k ? 'bg-accent text-on-accent shadow-sm' : 'text-ink/50 hover:text-accent')}>
               {lbl}
             </button>
           ))}
@@ -205,7 +205,7 @@ const Caisse: React.FC<CaisseProps> = ({ user }) => {
       <div className="card-premium p-2 sm:p-4">
         {loading ? (
           <div className="space-y-2 p-2">
-            {Array.from({ length: 6 }).map((_, i) => <div key={i} className="h-16 rounded-2xl bg-white/50 animate-pulse" />)}
+            {Array.from({ length: 6 }).map((_, i) => <div key={i} className="h-16 rounded-2xl bg-surface/50 animate-pulse" />)}
           </div>
         ) : filtered.length === 0 ? (
           <div className="text-center py-16">
@@ -246,21 +246,21 @@ const Caisse: React.FC<CaisseProps> = ({ user }) => {
         {formOpen && (
           <motion.div className="fixed inset-0 z-[60] flex items-center justify-center p-4"
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <div className="absolute inset-0 bg-ink/40 backdrop-blur-sm" onClick={() => setFormOpen(false)} />
+            <div className="absolute inset-0 bg-overlay backdrop-blur-sm" onClick={() => setFormOpen(false)} />
             <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative bg-white rounded-premium shadow-2xl p-7 w-full max-w-md">
+              className="relative bg-surface rounded-premium shadow-2xl p-7 w-full max-w-md">
               <button onClick={() => setFormOpen(false)} className="absolute top-5 right-5 p-2 rounded-full hover:bg-ink/5 text-ink/40"><X size={18} /></button>
               <h3 className="text-2xl font-serif font-bold text-ink mb-6">Nouvelle transaction</h3>
 
               <div className="grid grid-cols-2 gap-3 mb-5">
                 <button onClick={() => setTxType('in')}
                   className={cn('flex items-center justify-center gap-2 py-3.5 rounded-2xl font-semibold border transition-all',
-                    txType === 'in' ? 'bg-emerald-500 text-white border-emerald-500' : 'bg-white/60 text-ink/60 border-border')}>
+                    txType === 'in' ? 'bg-emerald-500 text-white border-emerald-500' : 'bg-surface/60 text-ink/60 border-border')}>
                   <ArrowDownCircle size={18} /> Dépôt
                 </button>
                 <button onClick={() => setTxType('out')}
                   className={cn('flex items-center justify-center gap-2 py-3.5 rounded-2xl font-semibold border transition-all',
-                    txType === 'out' ? 'bg-red-500 text-white border-red-500' : 'bg-white/60 text-ink/60 border-border')}>
+                    txType === 'out' ? 'bg-red-500 text-white border-red-500' : 'bg-surface/60 text-ink/60 border-border')}>
                   <ArrowUpCircle size={18} /> Retrait
                 </button>
               </div>
@@ -281,7 +281,7 @@ const Caisse: React.FC<CaisseProps> = ({ user }) => {
               </div>
 
               <div className="flex gap-3 mt-8">
-                <button onClick={() => setFormOpen(false)} className="flex-1 py-3 rounded-2xl bg-white/70 border border-border text-ink/60 font-semibold">Annuler</button>
+                <button onClick={() => setFormOpen(false)} className="flex-1 py-3 rounded-2xl bg-surface/70 border border-border text-ink/60 font-semibold">Annuler</button>
                 <button onClick={saveTx} disabled={saving || !Number(amount)} className="flex-1 btn-gradient py-3 disabled:opacity-40">{saving ? 'Enregistrement…' : 'Enregistrer'}</button>
               </div>
             </motion.div>
@@ -300,14 +300,14 @@ const SummaryCard: React.FC<{ icon: React.ElementType; label: string; value: num
   } as const;
   return (
     <div className={cn('rounded-premium p-6 relative overflow-hidden shadow-premium',
-      highlight ? `bg-gradient-to-br ${tones[tone]} text-white` : 'bg-white/70 border border-white/60')}>
+      highlight ? `bg-gradient-to-br ${tones[tone]} text-white` : 'bg-surface/70 border border-border')}>
       <div className="flex items-center justify-between">
         <div>
           <p className={cn('text-xs uppercase tracking-wide font-bold', highlight ? 'text-white/80' : 'text-ink/40')}>{label}</p>
           <p className={cn('text-2xl font-bold mt-1', highlight ? 'text-white' : 'text-ink')}>{formatCurrency(value)}</p>
         </div>
         <div className={cn('w-11 h-11 rounded-2xl flex items-center justify-center',
-          highlight ? 'bg-white/20' : `bg-gradient-to-br ${tones[tone]} text-white`)}>
+          highlight ? 'bg-surface/20' : `bg-gradient-to-br ${tones[tone]} text-white`)}>
           <Icon size={22} className={highlight ? 'text-white' : 'text-white'} />
         </div>
       </div>

@@ -141,7 +141,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setIsCollapsed(true)}
-            className="fixed inset-0 bg-ink/40 backdrop-blur-sm z-50"
+            className="fixed inset-0 bg-overlay backdrop-blur-sm z-50"
           />
         )}
       </AnimatePresence>
@@ -152,8 +152,8 @@ const Sidebar: React.FC<SidebarProps> = ({
         variants={sidebarVariants}
         className={cn(
           'fixed h-screen z-50 overflow-hidden flex flex-col',
-          'bg-gradient-to-b from-white/80 via-[#FBF3F5]/85 to-[#F6E8EC]/80 backdrop-blur-2xl',
-          'border-r border-accent/15 shadow-[0_10px_40px_-15px_rgba(183,110,121,0.25)]',
+          'bg-gradient-to-b from-surface via-surface to-primary-bg backdrop-blur-2xl',
+          'border-r border-border shadow-[0_10px_40px_-15px_rgba(0,0,0,0.45)]',
           isCollapsed ? 'pointer-events-none' : 'pointer-events-auto',
         )}
       >
@@ -168,7 +168,7 @@ const Sidebar: React.FC<SidebarProps> = ({
               {config.logo ? (
                 <img src={config.logo} alt="Logo" className="w-full h-full object-cover" />
               ) : (
-                <Sparkles className="text-white w-5 h-5" />
+                <Sparkles className="text-on-accent w-5 h-5" />
               )}
             </div>
             <div className="min-w-0">
@@ -212,7 +212,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                       }}
                       className={cn(
                         'w-full flex items-center gap-3.5 px-3 py-3 rounded-2xl transition-all duration-300 group relative',
-                        active ? 'text-white' : 'text-ink/60 hover:bg-white/60 hover:text-accent',
+                        active ? 'text-on-accent' : 'text-ink/60 hover:bg-surface-2 hover:text-accent',
                       )}
                     >
                       {active && (
@@ -225,14 +225,14 @@ const Sidebar: React.FC<SidebarProps> = ({
                       <span
                         className={cn(
                           'flex items-center justify-center w-9 h-9 rounded-xl transition-all duration-300 shrink-0',
-                          active ? 'bg-white/25' : 'bg-white/50 group-hover:bg-accent/10',
+                          active ? 'bg-black/15' : 'bg-surface-2 group-hover:bg-accent/10',
                         )}
                       >
                         <item.icon
                           size={19}
                           className={cn(
                             'transition-transform duration-300 group-active:scale-90',
-                            active ? 'text-white' : 'text-accent/70 group-hover:text-accent',
+                            active ? 'text-on-accent' : 'text-accent/70 group-hover:text-accent',
                           )}
                         />
                       </span>
@@ -251,7 +251,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             onClick={onLogout}
             className="w-full flex items-center gap-3.5 px-3 py-3 rounded-2xl text-ink/50 hover:bg-red-50 hover:text-red-500 transition-all duration-300 group"
           >
-            <span className="flex items-center justify-center w-9 h-9 rounded-xl bg-white/50 group-hover:bg-red-100 transition-colors">
+            <span className="flex items-center justify-center w-9 h-9 rounded-xl bg-surface/50 group-hover:bg-red-100 transition-colors">
               <LogOut size={18} className="group-hover:translate-x-0.5 transition-transform" />
             </span>
             <span className="font-medium text-sm">Déconnexion</span>

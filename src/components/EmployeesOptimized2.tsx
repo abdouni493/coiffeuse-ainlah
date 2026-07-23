@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Plus, Edit2, Trash2, User, Phone, MapPin, Briefcase, DollarSign, Calendar, X, Check, AlertCircle, Lock, Mail, MinusCircle, PlusCircle, History, Search } from 'lucide-react';
-import { User as Employee, EmployeePayment } from '../types';
+import { User as Employee, EmployeePayment, Role } from '../types';
 import { cn } from '../lib/utils';
 import { supabase } from '../lib/supabase';
 import { fetchEmployees, fetchEmployeePayments, batchInsert, batchUpdate } from '../lib/dataService';
@@ -41,7 +41,7 @@ const EmployeesOptimized: React.FC = () => {
     fullName: '',
     phone: '',
     address: '',
-    role: 'worker' as 'admin' | 'worker',
+    role: 'worker' as Role,
     paymentType: 'month' as 'days' | 'month' | 'percentage',
     percentage: '',
     username: '',
@@ -324,7 +324,7 @@ const EmployeesOptimized: React.FC = () => {
       </div>
 
       {/* Employee Table */}
-      <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+      <div className="bg-surface rounded-lg shadow-lg overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-gray-100 border-b">
@@ -441,9 +441,9 @@ const EmployeesOptimized: React.FC = () => {
               animate={{ scale: 1 }}
               exit={{ scale: 0.95 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-white rounded-lg shadow-lg max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto"
+              className="bg-surface rounded-lg shadow-lg max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto"
             >
-              <div className="sticky top-0 bg-white border-b p-6 flex justify-between items-center">
+              <div className="sticky top-0 bg-surface border-b p-6 flex justify-between items-center">
                 <h2 className="text-2xl font-bold text-gray-800">
                   {editingEmployee ? 'Edit Employee' : 'Add New Employee'}
                 </h2>
@@ -564,7 +564,7 @@ const EmployeesOptimized: React.FC = () => {
               animate={{ scale: 1 }}
               exit={{ scale: 0.95 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-white rounded-lg shadow-lg max-w-md w-full mx-4"
+              className="bg-surface rounded-lg shadow-lg max-w-md w-full mx-4"
             >
               <div className="border-b p-6 flex justify-between items-center">
                 <h2 className="text-xl font-bold text-gray-800">Add Payment</h2>
@@ -656,9 +656,9 @@ const EmployeesOptimized: React.FC = () => {
               animate={{ scale: 1 }}
               exit={{ scale: 0.95 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-white rounded-lg shadow-lg max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto"
+              className="bg-surface rounded-lg shadow-lg max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto"
             >
-              <div className="sticky top-0 bg-white border-b p-6 flex justify-between items-center">
+              <div className="sticky top-0 bg-surface border-b p-6 flex justify-between items-center">
                 <h2 className="text-2xl font-bold text-gray-800">{historyModal.employee.fullName} - History</h2>
                 <button
                   onClick={() => setHistoryModal({ isOpen: false, employee: null })}
@@ -702,7 +702,7 @@ const EmployeesOptimized: React.FC = () => {
               animate={{ scale: 1 }}
               exit={{ scale: 0.95 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-white rounded-lg shadow-lg max-w-sm w-full mx-4"
+              className="bg-surface rounded-lg shadow-lg max-w-sm w-full mx-4"
             >
               <div className="p-6">
                 <div className="flex items-center gap-3 mb-4">

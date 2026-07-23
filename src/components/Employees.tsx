@@ -1634,10 +1634,10 @@ const Employees: React.FC = () => {
           >
             <div className="flex items-center gap-5 mb-8">
               <div className="relative">
-                <div className="w-20 h-20 rounded-2xl bg-accent/10 flex items-center justify-center text-accent shadow-inner group-hover:bg-accent group-hover:text-white transition-all duration-500">
+                <div className="w-20 h-20 rounded-2xl bg-accent/10 flex items-center justify-center text-accent shadow-inner group-hover:bg-accent group-hover:text-on-accent transition-all duration-500">
                   <User size={40} />
                 </div>
-                <div className="absolute -bottom-2 -right-2 w-8 h-8 rounded-xl bg-white border border-border flex items-center justify-center shadow-sm">
+                <div className="absolute -bottom-2 -right-2 w-8 h-8 rounded-xl bg-surface border border-border flex items-center justify-center shadow-sm">
                   <Briefcase size={14} className="text-accent" />
                 </div>
               </div>
@@ -1719,7 +1719,7 @@ const Employees: React.FC = () => {
                     setDateRangeOverride({ lastPaymentDate: '', currentDate: new Date().toISOString().split('T')[0] });
                   }
                 }}
-                className="flex flex-col items-center gap-1 p-2 rounded-xl bg-accent text-white hover:bg-accent/90 transition-all text-[10px] font-bold uppercase tracking-wider shadow-lg shadow-accent/20"
+                className="flex flex-col items-center gap-1 p-2 rounded-xl bg-accent text-on-accent hover:bg-accent/90 transition-all text-[10px] font-bold uppercase tracking-wider shadow-lg shadow-accent/20"
               >
                 <DollarSign size={16} /> Paiement
               </button>
@@ -1728,7 +1728,7 @@ const Employees: React.FC = () => {
             <div className="pt-6 border-t border-border flex gap-3">
               <button
                 onClick={() => openEditModal(emp)}
-                className="flex-1 py-3 rounded-xl bg-primary-bg text-ink/60 font-bold text-xs hover:bg-accent hover:text-white transition-all duration-300 flex items-center justify-center gap-2 shadow-sm"
+                className="flex-1 py-3 rounded-xl bg-primary-bg text-ink/60 font-bold text-xs hover:bg-accent hover:text-on-accent transition-all duration-300 flex items-center justify-center gap-2 shadow-sm"
               >
                 <Edit2 size={16} /> Modifier
               </button>
@@ -1753,13 +1753,13 @@ const Employees: React.FC = () => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => { setPaymentModal({ isOpen: false, employee: null, type: 'acompte' }); setDailyPaymentData({ days: '', date: new Date().toISOString().split('T')[0] }); setDateRangeOverride({ lastPaymentDate: '', currentDate: new Date().toISOString().split('T')[0] }); setPercentagePaymentMode({ isActive: false, reservations: [], editedAmount: '' }); }}
-              className="fixed inset-0 bg-ink/60 backdrop-blur-sm"
+              className="fixed inset-0 bg-overlay backdrop-blur-sm"
             />
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-lg bg-white rounded-[24px] md:rounded-[32px] shadow-2xl overflow-hidden max-h-[90vh] flex flex-col mx-auto"
+              className="relative w-full max-w-lg bg-surface rounded-[24px] md:rounded-[32px] shadow-2xl overflow-hidden max-h-[90vh] flex flex-col mx-auto"
             >
               <div className="p-5 md:p-8 overflow-y-auto custom-scrollbar">
                 <div className="flex justify-between items-center mb-6">
@@ -1787,7 +1787,7 @@ const Employees: React.FC = () => {
                 {paymentModal.type === 'payment' && paymentModal.employee?.paymentType === 'days' && journalierPaymentMode.isActive && (
                   <div className="space-y-5">
                     {/* Unpaid Reservations */}
-                    <div className="p-5 bg-white border border-border rounded-2xl shadow-sm">
+                    <div className="p-5 bg-surface border border-border rounded-2xl shadow-sm">
                       <div className="flex items-center gap-2 mb-4">
                         <div className="w-1 h-6 bg-gradient-to-b from-accent to-accent/60 rounded-full"></div>
                         <h3 className="text-sm font-bold text-ink uppercase tracking-widest">Réservations non payées</h3>
@@ -1818,7 +1818,7 @@ const Employees: React.FC = () => {
                     </div>
 
                     {/* Search for additional reservations */}
-                    <div className="p-5 bg-white border border-border rounded-2xl shadow-sm">
+                    <div className="p-5 bg-surface border border-border rounded-2xl shadow-sm">
                       <div className="flex items-center gap-2 mb-4">
                         <div className="w-1 h-6 bg-gradient-to-b from-green-500 to-green-500/60 rounded-full"></div>
                         <h3 className="text-sm font-bold text-ink uppercase tracking-widest">Ajouter d'autres réservations</h3>
@@ -1861,7 +1861,7 @@ const Employees: React.FC = () => {
                     </div>
 
                     {/* Total and Payment Options */}
-                    <div className="p-5 bg-white border border-border rounded-2xl shadow-sm">
+                    <div className="p-5 bg-surface border border-border rounded-2xl shadow-sm">
                       <div className="flex items-center gap-2 mb-4">
                         <div className="w-1 h-6 bg-gradient-to-b from-accent to-accent/60 rounded-full"></div>
                         <h3 className="text-sm font-bold text-ink uppercase tracking-widest">Détails du paiement</h3>
@@ -1939,7 +1939,7 @@ const Employees: React.FC = () => {
                   return (
                     <div className="space-y-5 mt-5">
                       {/* Unpaid commission reservations */}
-                      <div className="p-5 bg-white border border-border rounded-2xl shadow-sm">
+                      <div className="p-5 bg-surface border border-border rounded-2xl shadow-sm">
                         <div className="flex items-center gap-2 mb-4">
                           <div className="w-1 h-6 bg-gradient-to-b from-accent to-accent/60 rounded-full"></div>
                           <h3 className="text-sm font-bold text-ink uppercase tracking-widest">Réservations non payées ({percentagePaymentMode.reservations.length})</h3>
@@ -1971,7 +1971,7 @@ const Employees: React.FC = () => {
 
                       {/* Unpaid acomptes & absences */}
                       {deductions.items.length > 0 && (
-                        <div className="p-5 bg-white border border-border rounded-2xl shadow-sm">
+                        <div className="p-5 bg-surface border border-border rounded-2xl shadow-sm">
                           <div className="flex items-center gap-2 mb-4">
                             <div className="w-1 h-6 bg-gradient-to-b from-red-500 to-red-500/60 rounded-full"></div>
                             <h3 className="text-sm font-bold text-ink uppercase tracking-widest">Acomptes & absences non payés</h3>
@@ -1995,7 +1995,7 @@ const Employees: React.FC = () => {
                       )}
 
                       {/* Net + editable amount */}
-                      <div className="p-5 bg-white border border-border rounded-2xl shadow-sm space-y-3">
+                      <div className="p-5 bg-surface border border-border rounded-2xl shadow-sm space-y-3">
                         <div className="flex justify-between items-center p-3 bg-primary-bg/50 rounded-lg border border-border/30">
                           <span className="text-sm text-ink/50 font-medium">Net calculé (commissions − déductions)</span>
                           <span className="font-serif font-bold text-lg text-ink">{formatCurrency(net)}</span>
@@ -2257,7 +2257,7 @@ const Employees: React.FC = () => {
                                     return <p className="text-xs text-ink/40">Aucun travail non payé</p>;
                                   }
                                   return worksForEmployee.map((work, idx) => (
-                                    <div key={idx} className="flex justify-between text-xs p-2 bg-white/30 rounded">
+                                    <div key={idx} className="flex justify-between text-xs p-2 bg-surface/30 rounded">
                                       <span className="text-ink/60">Réservation #{work.reservationId.substring(0, 8)}</span>
                                       <span className="font-bold text-accent">{formatCurrency(work.amount)}</span>
                                     </div>
@@ -2306,7 +2306,7 @@ const Employees: React.FC = () => {
                           usePercentage: false,
                         });
                       }}
-                      className="flex-1 py-4 rounded-2xl bg-white border border-border font-bold text-ink/40 hover:text-ink transition-all"
+                      className="flex-1 py-4 rounded-2xl bg-surface border border-border font-bold text-ink/40 hover:text-ink transition-all"
                     >
                       Annuler
                     </button>
@@ -2325,7 +2325,7 @@ const Employees: React.FC = () => {
                         setPaymentModal({ isOpen: false, employee: null, type: 'acompte' });
                         setPercentagePaymentMode({ isActive: false, reservations: [], editedAmount: '' });
                       }}
-                      className="flex-1 py-4 rounded-2xl bg-white border border-border font-bold text-ink/40 hover:text-ink transition-all"
+                      className="flex-1 py-4 rounded-2xl bg-surface border border-border font-bold text-ink/40 hover:text-ink transition-all"
                     >
                       Annuler
                     </button>
@@ -2393,13 +2393,13 @@ const Employees: React.FC = () => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsModalOpen(false)}
-              className="fixed inset-0 bg-ink/60 backdrop-blur-sm"
+              className="fixed inset-0 bg-overlay backdrop-blur-sm"
             />
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-2xl bg-white rounded-[24px] md:rounded-[32px] shadow-2xl overflow-hidden my-auto max-h-[90vh] flex flex-col mx-auto"
+              className="relative w-full max-w-2xl bg-surface rounded-[24px] md:rounded-[32px] shadow-2xl overflow-hidden my-auto max-h-[90vh] flex flex-col mx-auto"
             >
               <div className="p-5 md:p-8 overflow-y-auto custom-scrollbar">
                 <div className="flex justify-between items-center mb-6">
@@ -2621,8 +2621,8 @@ const Employees: React.FC = () => {
                                         className={cn(
                                           'px-3 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wider border transition-all',
                                           active
-                                            ? 'bg-accent text-white border-accent'
-                                            : 'bg-white text-ink/50 border-border hover:border-accent/40',
+                                            ? 'bg-accent text-on-accent border-accent'
+                                            : 'bg-surface text-ink/50 border-border hover:border-accent/40',
                                         )}
                                       >
                                         {a.label}
@@ -2640,14 +2640,14 @@ const Employees: React.FC = () => {
                 </div>
 
                 <div className="flex gap-4 pt-4">
-                  <button onClick={() => setIsModalOpen(false)} disabled={isSaving} className="flex-1 py-4 rounded-2xl bg-white border border-border font-bold text-ink/40 hover:text-ink transition-all disabled:opacity-50">Annuler</button>
+                  <button onClick={() => setIsModalOpen(false)} disabled={isSaving} className="flex-1 py-4 rounded-2xl bg-surface border border-border font-bold text-ink/40 hover:text-ink transition-all disabled:opacity-50">Annuler</button>
                   <button
                     onClick={handleSaveEmployee}
                     disabled={isSaving}
                     className="flex-1 btn-gradient shimmer py-4 rounded-2xl font-bold flex items-center justify-center gap-2 disabled:opacity-50"
                   >
                     {isSaving ? (
-                      <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> Enregistrement...</>
+                      <><div className="w-4 h-4 border-2 border-border border-t-white rounded-full animate-spin"></div> Enregistrement...</>
                     ) : (
                       <><Check size={20} /> Enregistrer</>
                     )}
@@ -2668,13 +2668,13 @@ const Employees: React.FC = () => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setDeleteConfirm(null)}
-              className="absolute inset-0 bg-ink/60 backdrop-blur-sm"
+              className="absolute inset-0 bg-overlay backdrop-blur-sm"
             />
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-md bg-white rounded-[32px] shadow-2xl overflow-hidden"
+              className="relative w-full max-w-md bg-surface rounded-[32px] shadow-2xl overflow-hidden"
             >
               <div className="p-8 text-center space-y-6">
                 <div className="w-20 h-20 rounded-full bg-red-50 flex items-center justify-center text-red-500 mx-auto">
@@ -2687,7 +2687,7 @@ const Employees: React.FC = () => {
                   </p>
                 </div>
                 <div className="flex gap-4 pt-4">
-                  <button onClick={(e) => { e.stopPropagation(); setDeleteConfirm(null); }} className="flex-1 py-4 rounded-2xl bg-white border border-border font-bold text-ink/40 hover:text-ink transition-all">Annuler</button>
+                  <button onClick={(e) => { e.stopPropagation(); setDeleteConfirm(null); }} className="flex-1 py-4 rounded-2xl bg-surface border border-border font-bold text-ink/40 hover:text-ink transition-all">Annuler</button>
                   <button
                     onClick={(e) => { e.stopPropagation(); handleDeleteEmployee(); }}
                     disabled={isDeletingId === deleteConfirm?.id}
@@ -2695,7 +2695,7 @@ const Employees: React.FC = () => {
                   >
                     {isDeletingId === deleteConfirm?.id ? (
                       <>
-                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                        <div className="w-4 h-4 border-2 border-border border-t-white rounded-full animate-spin"></div>
                         Suppression...
                       </>
                     ) : (
@@ -2718,13 +2718,13 @@ const Employees: React.FC = () => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setHistoryModal({ isOpen: false, employee: null })}
-              className="fixed inset-0 bg-ink/60 backdrop-blur-sm"
+              className="fixed inset-0 bg-overlay backdrop-blur-sm"
             />
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-4xl bg-white rounded-[24px] md:rounded-[32px] shadow-2xl overflow-hidden max-h-[90vh] flex flex-col mx-auto"
+              className="relative w-full max-w-4xl bg-surface rounded-[24px] md:rounded-[32px] shadow-2xl overflow-hidden max-h-[90vh] flex flex-col mx-auto"
             >
               <div className="sticky top-0 bg-gradient-to-r from-accent/10 to-accent/5 border-b border-border p-5 md:p-8 flex justify-between items-center z-10">
                 <div>
@@ -2783,25 +2783,25 @@ const Employees: React.FC = () => {
                         Résumé des Paiements Journaliers
                       </h4>
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <div className="p-3 bg-white rounded-xl border border-accent/20">
+                        <div className="p-3 bg-surface rounded-xl border border-accent/20">
                           <p className="text-xs text-ink/40 font-bold uppercase tracking-widest mb-1">Total Payé</p>
                           <p className="text-lg md:text-xl font-serif font-bold text-green-600">
                             {formatCurrency(historyData.works.filter(w => w.reservationWorkerStatus === 'paid').reduce((sum, w) => sum + (w.price || 0), 0))}
                           </p>
                         </div>
-                        <div className="p-3 bg-white rounded-xl border border-accent/20">
+                        <div className="p-3 bg-surface rounded-xl border border-accent/20">
                           <p className="text-xs text-ink/40 font-bold uppercase tracking-widest mb-1">Total Non Payé</p>
                           <p className="text-lg md:text-xl font-serif font-bold text-orange-600">
                             {formatCurrency(historyData.works.filter(w => w.reservationWorkerStatus === 'unpaid').reduce((sum, w) => sum + (w.price || 0), 0))}
                           </p>
                         </div>
-                        <div className="p-3 bg-white rounded-xl border border-accent/20">
+                        <div className="p-3 bg-surface rounded-xl border border-accent/20">
                           <p className="text-xs text-ink/40 font-bold uppercase tracking-widest mb-1">Travaux Payés</p>
                           <p className="text-lg md:text-xl font-serif font-bold text-green-600">
                             {historyData.works.filter(w => w.reservationWorkerStatus === 'paid').length}
                           </p>
                         </div>
-                        <div className="p-3 bg-white rounded-xl border border-accent/20">
+                        <div className="p-3 bg-surface rounded-xl border border-accent/20">
                           <p className="text-xs text-ink/40 font-bold uppercase tracking-widest mb-1">Travaux Non Payés</p>
                           <p className="text-lg md:text-xl font-serif font-bold text-orange-600">
                             {historyData.works.filter(w => w.reservationWorkerStatus === 'unpaid').length}
@@ -3086,7 +3086,7 @@ const Employees: React.FC = () => {
                 </div>
               </div>
 
-              <div className="sticky bottom-0 bg-white border-t border-border p-5 md:p-8 flex gap-4">
+              <div className="sticky bottom-0 bg-surface border-t border-border p-5 md:p-8 flex gap-4">
                 <button
                   onClick={() => setHistoryModal({ isOpen: false, employee: null })}
                   className="flex-1 py-3 rounded-xl bg-primary-bg text-ink/60 font-bold hover:bg-accent/10 transition-all"
@@ -3108,13 +3108,13 @@ const Employees: React.FC = () => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setSelectedPaymentDetails({ isOpen: false, payment: null, reservations: [] })}
-              className="fixed inset-0 bg-ink/60 backdrop-blur-sm"
+              className="fixed inset-0 bg-overlay backdrop-blur-sm"
             />
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-2xl bg-white rounded-[24px] md:rounded-[32px] shadow-2xl overflow-hidden max-h-[90vh] flex flex-col mx-auto"
+              className="relative w-full max-w-2xl bg-surface rounded-[24px] md:rounded-[32px] shadow-2xl overflow-hidden max-h-[90vh] flex flex-col mx-auto"
             >
               <div className="sticky top-0 bg-gradient-to-r from-green-500/10 to-green-400/5 border-b border-border p-5 md:p-8 flex justify-between items-center z-10">
                 <div>
@@ -3204,7 +3204,7 @@ const Employees: React.FC = () => {
                 </div>
               </div>
 
-              <div className="sticky bottom-0 bg-white border-t border-border p-5 md:p-8 flex gap-4">
+              <div className="sticky bottom-0 bg-surface border-t border-border p-5 md:p-8 flex gap-4">
                 <button
                   onClick={() => setSelectedPaymentDetails({ isOpen: false, payment: null, reservations: [] })}
                   className="flex-1 py-3 rounded-xl bg-primary-bg text-ink/60 font-bold hover:bg-accent/10 transition-all"

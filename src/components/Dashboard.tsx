@@ -168,12 +168,12 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveTab, user }) => {
       {/* ═══════════════ HERO BANNER ═══════════════ */}
       <motion.div initial={{ opacity: 0, y: -18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
         className="relative overflow-hidden rounded-3xl p-8 md:p-10 text-white"
-        style={{ background: 'linear-gradient(135deg, #B76E79 0%, #c9606d 40%, #a0506f 100%)' }}>
+        style={{ background: 'linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-light) 40%, var(--color-accent-light) 100%)' }}>
 
         {/* decorative blobs */}
-        <div className="absolute -right-20 -top-20 w-72 h-72 bg-white/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -right-20 -top-20 w-72 h-72 bg-surface/10 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute left-1/3 bottom-0 w-40 h-40 bg-rose-300/20 rounded-full blur-2xl pointer-events-none" />
-        <div className="absolute right-1/4 top-4 w-24 h-24 bg-white/5 rounded-full blur-xl pointer-events-none" />
+        <div className="absolute right-1/4 top-4 w-24 h-24 bg-surface/5 rounded-full blur-xl pointer-events-none" />
 
         <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
           <div>
@@ -195,7 +195,7 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveTab, user }) => {
               { label: 'En Attente',    val: derived.pending.length,    sub: 'réservations' },
             ].map((item, i) => (
               <motion.div key={i} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.15 + i * 0.08 }}
-                className="bg-white/15 backdrop-blur-sm rounded-2xl px-5 py-4 border border-white/20 min-w-[100px]">
+                className="bg-surface/15 backdrop-blur-sm rounded-2xl px-5 py-4 border border-border min-w-[100px]">
                 <p className="text-white/55 text-[10px] font-bold uppercase tracking-wider mb-1">{item.label}</p>
                 <p className="text-3xl font-serif font-bold leading-none">{item.val}</p>
                 <p className="text-white/55 text-xs mt-1">{item.sub}</p>
@@ -203,7 +203,7 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveTab, user }) => {
             ))}
             <motion.button initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.4 }}
               onClick={() => load(true)}
-              className="bg-white/15 backdrop-blur-sm rounded-2xl px-4 py-4 border border-white/20 flex items-center gap-2 hover:bg-white/25 transition-colors">
+              className="bg-surface/15 backdrop-blur-sm rounded-2xl px-4 py-4 border border-border flex items-center gap-2 hover:bg-surface/25 transition-colors">
               <RefreshCw size={16} className={cn(refreshing && 'animate-spin')} />
               <span className="text-sm font-semibold hidden sm:block">Actualiser</span>
             </motion.button>
@@ -219,7 +219,7 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveTab, user }) => {
           { label: 'Finalisées',   val: derived.completed.length,  icon: CheckCircle2,  from: '#10b981', to: '#059669', bg: 'bg-emerald-50', border: 'border-emerald-100',text: 'text-emerald-600' },
           { label: 'En Attente',   val: derived.pending.length,    icon: Clock,         from: '#f59e0b', to: '#d97706', bg: 'bg-amber-50',   border: 'border-amber-100',  text: 'text-amber-600' },
           { label: 'Avec Dettes',  val: derived.withDebt.length,   icon: AlertCircle,   from: '#ef4444', to: '#dc2626', bg: 'bg-red-50',     border: 'border-red-100',    text: 'text-red-600' },
-          { label: 'Équipe',       val: workerCount + adminCount,  icon: UserCheck,     from: '#B76E79', to: '#a0506f', bg: 'bg-rose-50',    border: 'border-rose-100',   text: 'text-rose-600' },
+          { label: 'Équipe',       val: workerCount + adminCount,  icon: UserCheck,     from: 'var(--color-accent)', to: 'var(--color-accent-light)', bg: 'bg-rose-50',    border: 'border-rose-100',   text: 'text-rose-600' },
         ].map((s, i) => (
           <motion.div key={i} initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 + i * 0.07, type: 'spring', stiffness: 220 }}
             className={cn('p-4 rounded-2xl border', s.bg, s.border)}>
@@ -273,7 +273,7 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveTab, user }) => {
               <div className="space-y-2">
                 {derived.todayList.slice(0, 7).map((r, i) => (
                   <motion.div key={r.id} initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.28 + i * 0.05 }}
-                    className="flex items-center gap-3 p-3 rounded-xl bg-primary-bg/40 border border-border/20 hover:bg-white hover:shadow-sm transition-all">
+                    className="flex items-center gap-3 p-3 rounded-xl bg-primary-bg/40 border border-border/20 hover:bg-surface hover:shadow-sm transition-all">
                     <div className="w-11 text-center flex-shrink-0">
                       <span className="text-sm font-bold text-ink">{r.time || '—'}</span>
                     </div>
@@ -322,21 +322,21 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveTab, user }) => {
 
             <ResponsiveContainer width="100%" height={200}>
               <BarChart data={derived.last7} barGap={3} barCategoryGap="30%">
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(183,110,121,0.07)" />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--color-border)" />
                 <XAxis dataKey="name" axisLine={false} tickLine={false}
-                  tick={{ fill: '#1A1A1A55', fontSize: 11, fontWeight: 600 }} dy={10} />
+                  tick={{ fill: 'var(--color-ink)', fillOpacity: 0.45, fontSize: 11, fontWeight: 600 }} dy={10} />
                 <YAxis axisLine={false} tickLine={false}
-                  tick={{ fill: '#1A1A1A55', fontSize: 11, fontWeight: 600 }} allowDecimals={false} width={24} />
+                  tick={{ fill: 'var(--color-ink)', fillOpacity: 0.45, fontSize: 11, fontWeight: 600 }} allowDecimals={false} width={24} />
                 <Tooltip
-                  contentStyle={{ borderRadius: '16px', border: '1px solid rgba(183,110,121,0.12)', boxShadow: '0 8px 24px rgba(0,0,0,0.07)', backgroundColor: 'rgba(255,255,255,0.97)' }}
-                  itemStyle={{ fontSize: '12px', fontWeight: 700 }}
-                  labelStyle={{ fontSize: '11px', color: '#1A1A1A55', marginBottom: '4px' }}
-                  cursor={{ fill: 'rgba(183,110,121,0.04)', radius: 8 }}
+                  contentStyle={{ borderRadius: '16px', border: '1px solid var(--color-border)', boxShadow: '0 8px 24px rgba(0,0,0,0.25)', backgroundColor: 'var(--color-surface)', color: 'var(--color-ink)' }}
+                  itemStyle={{ fontSize: '12px', fontWeight: 700, color: 'var(--color-ink)' }}
+                  labelStyle={{ fontSize: '11px', color: 'var(--color-ink)', opacity: 0.55, marginBottom: '4px' }}
+                  cursor={{ fill: 'var(--color-border)', radius: 8 }}
                   formatter={(val: number, name: string) => [val, name === 'total' ? 'Total' : 'Finalisées']}
                 />
                 <Bar dataKey="total" name="total" radius={[6, 6, 0, 0]} barSize={18} animationDuration={1100}>
                   {derived.last7.map((entry, i) => (
-                    <Cell key={i} fill={entry.dateStr === todayStr ? '#B76E79' : '#B76E7955'} />
+                    <Cell key={i} fill="var(--color-accent)" fillOpacity={entry.dateStr === todayStr ? 1 : 0.35} />
                   ))}
                 </Bar>
                 <Bar dataKey="done" name="done" fill="#10b981" radius={[6, 6, 0, 0]} barSize={18} animationDuration={1300} />
@@ -465,7 +465,7 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveTab, user }) => {
             <div className="space-y-3">
               {derived.topServices.length > 0 ? derived.topServices.map((svc, i) => {
                 const pct = derived.total > 0 ? Math.round((svc.count / derived.total) * 100) : 0;
-                const colors = ['#B76E79', '#6366f1', '#8b5cf6', '#10b981', '#f59e0b'];
+                const colors = ['var(--color-accent)', '#6366f1', '#8b5cf6', '#10b981', '#f59e0b'];
                 return (
                   <motion.div key={i} initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.4 + i * 0.07 }}>
                     <div className="flex justify-between items-center text-xs mb-1.5">
@@ -522,7 +522,7 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveTab, user }) => {
                 <motion.div key={emp.id} initial={{ opacity: 0, x: 6 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.48 + i * 0.06 }}
                   className="flex items-center gap-2.5 p-2 rounded-xl hover:bg-primary-bg/50 transition-colors">
                   <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
-                    style={{ background: 'linear-gradient(135deg, #B76E79, #a0506f)' }}>
+                    style={{ background: 'linear-gradient(135deg, var(--color-accent), var(--color-accent-light))' }}>
                     {(emp.full_name || '?').charAt(0).toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -559,7 +559,7 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveTab, user }) => {
               <div className="space-y-2">
                 {derived.upcoming.slice(0, 5).map((r, i) => (
                   <motion.div key={r.id} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.56 + i * 0.06 }}
-                    className="flex items-center gap-3 p-3 rounded-xl bg-primary-bg/40 border border-border/20 hover:bg-white hover:shadow-sm transition-all">
+                    className="flex items-center gap-3 p-3 rounded-xl bg-primary-bg/40 border border-border/20 hover:bg-surface hover:shadow-sm transition-all">
                     <div className="flex-shrink-0 text-center w-11">
                       <p className="text-[11px] font-bold text-accent leading-tight">
                         {new Date(r.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}
@@ -590,7 +590,7 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveTab, user }) => {
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
           {[
             { label: 'Réservations', icon: Calendar,  tab: 'reservations', from: '#6366f1', to: '#4f46e5', count: `${derived.total} total` },
-            { label: 'Prestations',  icon: Scissors,  tab: 'prestations',  from: '#B76E79', to: '#a0506f', count: `${prestations.length} services` },
+            { label: 'Prestations',  icon: Scissors,  tab: 'prestations',  from: 'var(--color-accent)', to: 'var(--color-accent-light)', count: `${prestations.length} services` },
             { label: 'Employées',    icon: Users,      tab: 'employees',    from: '#8b5cf6', to: '#7c3aed', count: `${workerCount + adminCount} membres` },
             { label: 'Inventaire',   icon: Package,    tab: 'inventory',    from: '#10b981', to: '#059669', count: 'Stock & achats' },
             { label: 'Dépenses',     icon: ShoppingBag,tab: 'expenses',     from: '#f59e0b', to: '#d97706', count: 'Charges salon' },
@@ -599,7 +599,7 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveTab, user }) => {
             <motion.button key={i} whileHover={{ scale: 1.04, y: -3 }} whileTap={{ scale: 0.97 }}
               initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.62 + i * 0.06 }}
               onClick={() => setActiveTab(mod.tab)}
-              className="p-5 rounded-2xl border border-border/30 bg-white hover:shadow-lg transition-all text-left group relative overflow-hidden">
+              className="p-5 rounded-2xl border border-border/30 bg-surface hover:shadow-lg transition-all text-left group relative overflow-hidden">
               <div className="absolute inset-0 opacity-0 group-hover:opacity-[0.03] transition-opacity"
                 style={{ background: `linear-gradient(135deg, ${mod.from}, ${mod.to})` }} />
               <div className="w-11 h-11 rounded-xl mb-3 flex items-center justify-center shadow-sm"

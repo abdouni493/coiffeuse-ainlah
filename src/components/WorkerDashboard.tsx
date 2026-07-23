@@ -194,7 +194,7 @@ const WorkerDashboard: React.FC<WorkerDashboardProps> = ({ user, onLogout }) => 
   return (
     <div className="min-h-screen bg-primary-bg">
       {/* Header */}
-      <div className="bg-gradient-to-r from-accent to-accent-light text-white p-6">
+      <div className="bg-gradient-to-r from-accent to-accent-light text-on-accent p-6">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <div className="flex items-center gap-4">
             {profileData.avatarUrl ? (
@@ -204,7 +204,7 @@ const WorkerDashboard: React.FC<WorkerDashboardProps> = ({ user, onLogout }) => 
                 className="w-12 h-12 rounded-full object-cover"
               />
             ) : (
-              <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
+              <div className="w-12 h-12 rounded-full bg-surface/20 flex items-center justify-center">
                 <User className="w-6 h-6" />
               </div>
             )}
@@ -215,7 +215,7 @@ const WorkerDashboard: React.FC<WorkerDashboardProps> = ({ user, onLogout }) => 
           </div>
           <button 
             onClick={onLogout}
-            className="flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-surface/20 hover:bg-surface/30 rounded-lg transition-colors"
           >
             <LogOut size={20} />
             Déconnexion
@@ -224,7 +224,7 @@ const WorkerDashboard: React.FC<WorkerDashboardProps> = ({ user, onLogout }) => 
       </div>
 
       {/* Navigation Tabs */}
-      <div className="border-b border-ink/10 sticky top-0 bg-white/50 backdrop-blur-sm z-40">
+      <div className="border-b border-ink/10 sticky top-0 bg-surface/50 backdrop-blur-sm z-40">
         <div className="max-w-7xl mx-auto px-6 flex gap-1 overflow-x-auto">
           {[
             { id: 'overview', label: 'Vue d\'ensemble', icon: Calendar },
@@ -531,7 +531,7 @@ const WorkerDashboard: React.FC<WorkerDashboardProps> = ({ user, onLogout }) => 
                             <User className="w-12 h-12 text-ink/30" />
                           )}
                         </div>
-                        <label className="px-4 py-2 bg-accent text-white rounded-lg cursor-pointer hover:bg-accent-dark transition-colors">
+                        <label className="px-4 py-2 bg-accent text-on-accent rounded-lg cursor-pointer hover:bg-accent-dark transition-colors">
                           <Camera size={18} className="inline mr-2" />
                           Changer
                           <input 
@@ -638,7 +638,7 @@ const WorkerDashboard: React.FC<WorkerDashboardProps> = ({ user, onLogout }) => 
                         <div className="flex gap-3 pt-6">
                           <button
                             onClick={handleUpdateProfile}
-                            className="flex items-center gap-2 px-6 py-3 bg-accent text-white rounded-lg hover:bg-accent-dark transition-colors font-medium"
+                            className="flex items-center gap-2 px-6 py-3 bg-accent text-on-accent rounded-lg hover:bg-accent-dark transition-colors font-medium"
                           >
                             <Save size={20} />
                             Enregistrer
@@ -695,7 +695,7 @@ const WorkerDashboard: React.FC<WorkerDashboardProps> = ({ user, onLogout }) => 
 
                         <button
                           onClick={() => setEditingProfile(true)}
-                          className="flex items-center gap-2 px-6 py-3 bg-accent text-white rounded-lg hover:bg-accent-dark transition-colors font-medium mt-6"
+                          className="flex items-center gap-2 px-6 py-3 bg-accent text-on-accent rounded-lg hover:bg-accent-dark transition-colors font-medium mt-6"
                         >
                           <Edit2 size={20} />
                           Modifier le Profil

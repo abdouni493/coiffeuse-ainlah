@@ -394,7 +394,7 @@ const ReportsOptimized: React.FC = () => {
           <h1 className="text-4xl font-bold text-gray-900 mb-4">Reports & Analytics</h1>
 
           {/* Filters */}
-          <div className="bg-white rounded-xl shadow-lg p-6">
+          <div className="bg-surface rounded-xl shadow-lg p-6">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               {/* Report Type */}
               <div>
@@ -486,7 +486,7 @@ const SummaryCard: React.FC<{ title: string; value: any; color: string }> = ({ t
 );
 
 const ChartContainer: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
-  <div className="bg-white rounded-xl shadow-lg p-6">
+  <div className="bg-surface rounded-xl shadow-lg p-6">
     <h3 className="text-lg font-bold text-gray-900 mb-4">{title}</h3>
     {children}
   </div>

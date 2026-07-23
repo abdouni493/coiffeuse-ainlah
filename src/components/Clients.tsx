@@ -125,7 +125,10 @@ const Clients: React.FC<ClientsProps> = ({ config, user }) => {
     const paid = visitList.reduce((s, r) => s + (r.paid_amount || 0), 0);
     const visits = visitList.length;
     const req = fidelity.reservations_required || 10;
-    const rewardsEarned = fidelity.enabled ? Math.floor(visits / req) : 0;
+    // A cycle is `req` paid visits + 1 rewarded visit, matching the automatic
+    // reduction applied on the Réservations page.
+    const cycle = req + 1;
+    const rewardsEarned = fidelity.enabled ? Math.floor(visits / cycle) : 0;
     const rewardsAvailable = Math.max(0, rewardsEarned - (c.rewards_redeemed || 0));
     return {
       visits,
@@ -203,7 +206,7 @@ const Clients: React.FC<ClientsProps> = ({ config, user }) => {
         </div>
         <div className="flex items-center gap-3">
           <button onClick={() => { setCfgDraft(fidelity); setConfigOpen(true); }}
-            className="flex items-center gap-2 px-4 py-3 rounded-2xl bg-white/60 border border-border text-ink/70 hover:text-accent hover:border-accent/30 transition-all">
+            className="flex items-center gap-2 px-4 py-3 rounded-2xl bg-surface/60 border border-border text-ink/70 hover:text-accent hover:border-accent/30 transition-all">
             <Settings2 size={18} /> <span className="hidden sm:inline font-medium text-sm">Fidélité</span>
           </button>
           {can('create') && (
@@ -226,7 +229,7 @@ const Clients: React.FC<ClientsProps> = ({ config, user }) => {
       {loading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="h-48 rounded-premium bg-white/40 animate-pulse" />
+            <div key={i} className="h-48 rounded-premium bg-surface/40 animate-pulse" />
           ))}
         </div>
       ) : filtered.length === 0 ? (
@@ -245,12 +248,13 @@ const Clients: React.FC<ClientsProps> = ({ config, user }) => {
             {filtered.map((c, i) => {
               const s = statsFor(c);
               const req = fidelity.reservations_required || 10;
-              const progress = Math.min(100, ((s.visits % req) / req) * 100);
+              // Progress through the current cycle (req paid visits, then the reward).
+              const progress = Math.min(100, ((s.visits % (req + 1)) / req) * 100);
               return (
                 <motion.div key={c.id}
                   initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95 }}
                   transition={{ delay: Math.min(i * 0.03, 0.3) }}
-                  className="group relative rounded-premium bg-white/70 backdrop-blur-xl border border-white/60 shadow-premium p-6 hover:-translate-y-1 hover:shadow-2xl transition-all duration-400 overflow-hidden">
+                  className="group relative rounded-premium bg-surface/70 backdrop-blur-xl border border-border shadow-premium p-6 hover:-translate-y-1 hover:shadow-2xl transition-all duration-400 overflow-hidden">
                   <div className="absolute -top-10 -right-10 w-28 h-28 rounded-full bg-accent-light/15 blur-2xl group-hover:bg-accent-light/25 transition-all" />
 
                   {s.rewardsAvailable > 0 && (
@@ -277,7 +281,7 @@ const Clients: React.FC<ClientsProps> = ({ config, user }) => {
                       <span className="text-xs font-semibold text-ink/50 flex items-center gap-1.5">
                         <Award size={13} className="text-accent" /> {s.visits} visite{s.visits > 1 ? 's' : ''}
                       </span>
-                      <span className="text-xs font-medium text-ink/40">{s.visits % req}/{req}</span>
+                      <span className="text-xs font-medium text-ink/40">{Math.min(req, s.visits % (req + 1))}/{req}</span>
                     </div>
                     <div className="h-2 rounded-full bg-accent/10 overflow-hidden">
                       <motion.div className="h-full rounded-full bg-gradient-to-r from-accent to-accent-light"
@@ -300,7 +304,7 @@ const Clients: React.FC<ClientsProps> = ({ config, user }) => {
                   {/* Actions */}
                   <div className="flex items-center gap-2">
                     <button onClick={() => setDetailClient(c)} title="Détails"
-                      className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-accent/10 text-accent hover:bg-accent hover:text-white transition-all text-sm font-semibold">
+                      className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-accent/10 text-accent hover:bg-accent hover:text-on-accent transition-all text-sm font-semibold">
                       <Eye size={16} /> Détails
                     </button>
                     <button onClick={() => setFidelityClient(c)} title="Carte de fidélité"
@@ -309,13 +313,13 @@ const Clients: React.FC<ClientsProps> = ({ config, user }) => {
                     </button>
                     {can('edit') && (
                       <button onClick={() => openEdit(c)} title="Modifier"
-                        className="p-2.5 rounded-xl bg-white/70 text-ink/50 hover:bg-ink hover:text-white transition-all">
+                        className="p-2.5 rounded-xl bg-surface/70 text-ink/50 hover:bg-panel hover:text-white transition-all">
                         <Pencil size={16} />
                       </button>
                     )}
                     {can('delete') && (
                       <button onClick={() => setConfirmDelete(c)} title="Supprimer"
-                        className="p-2.5 rounded-xl bg-white/70 text-ink/50 hover:bg-red-500 hover:text-white transition-all">
+                        className="p-2.5 rounded-xl bg-surface/70 text-ink/50 hover:bg-red-500 hover:text-white transition-all">
                         <Trash2 size={16} />
                       </button>
                     )}
@@ -351,7 +355,7 @@ const Clients: React.FC<ClientsProps> = ({ config, user }) => {
           </div>
         </div>
         <div className="flex gap-3 mt-8">
-          <button onClick={() => setFormOpen(false)} className="flex-1 py-3 rounded-2xl bg-white/70 border border-border text-ink/60 font-semibold hover:bg-white transition-all">Annuler</button>
+          <button onClick={() => setFormOpen(false)} className="flex-1 py-3 rounded-2xl bg-surface/70 border border-border text-ink/60 font-semibold hover:bg-surface transition-all">Annuler</button>
           <button onClick={saveClient} disabled={!name.trim()} className="flex-1 btn-gradient py-3 disabled:opacity-40">{editing ? 'Enregistrer' : 'Créer'}</button>
         </div>
       </Modal>
@@ -363,7 +367,7 @@ const Clients: React.FC<ClientsProps> = ({ config, user }) => {
           return (
             <div>
               <div className="flex items-center gap-4 mb-6">
-                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-accent to-accent-light flex items-center justify-center text-white font-bold text-2xl">
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-accent to-accent-light flex items-center justify-center text-on-accent font-bold text-2xl">
                   {detailClient.name.charAt(0).toUpperCase()}
                 </div>
                 <div>
@@ -385,7 +389,7 @@ const Clients: React.FC<ClientsProps> = ({ config, user }) => {
                 {s.reservations.map(r => {
                   const rest = Math.max(0, (r.total_price || 0) - (r.paid_amount || 0));
                   return (
-                    <div key={r.id} className="flex items-center justify-between gap-3 p-3.5 rounded-2xl bg-white/60 border border-white/70">
+                    <div key={r.id} className="flex items-center justify-between gap-3 p-3.5 rounded-2xl bg-surface/60 border border-border">
                       <div className="min-w-0">
                         <p className="font-semibold text-ink text-sm truncate">{prestations[r.prestation_id || ''] || 'Prestation'}</p>
                         <p className="text-ink/40 text-xs">{r.date}{r.time ? ` · ${r.time}` : ''}</p>
@@ -409,14 +413,14 @@ const Clients: React.FC<ClientsProps> = ({ config, user }) => {
         {fidelityClient && (() => {
           const s = statsFor(fidelityClient);
           const req = fidelity.reservations_required || 10;
-          const inCycle = s.visits % req;
+          const inCycle = Math.min(req, s.visits % (req + 1));
           return (
             <div>
               <h3 className="text-2xl font-serif font-bold text-ink mb-5 flex items-center gap-2"><Award className="text-amber-500" /> Carte de Fidélité</h3>
 
               <div className="printable-area">
-                <div className="rounded-3xl p-6 bg-gradient-to-br from-accent via-accent-light to-accent text-white shadow-xl relative overflow-hidden">
-                  <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full bg-white/15 blur-xl" />
+                <div className="rounded-3xl p-6 bg-gradient-to-br from-accent via-accent-light to-accent text-on-accent shadow-xl relative overflow-hidden">
+                  <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full bg-surface/15 blur-xl" />
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <Sparkles size={20} />
@@ -431,7 +435,7 @@ const Clients: React.FC<ClientsProps> = ({ config, user }) => {
                   <div className="mt-6 grid grid-cols-5 gap-2">
                     {Array.from({ length: req }).map((_, idx) => (
                       <div key={idx} className={cn('aspect-square rounded-full flex items-center justify-center border-2',
-                        idx < inCycle ? 'bg-white text-accent border-white' : 'border-white/50 text-white/40')}>
+                        idx < inCycle ? 'bg-surface text-accent border-border' : 'border-border text-white/40')}>
                         {idx < inCycle ? <CheckCircle2 size={16} /> : <span className="text-xs font-bold">{idx + 1}</span>}
                       </div>
                     ))}
@@ -451,7 +455,7 @@ const Clients: React.FC<ClientsProps> = ({ config, user }) => {
               </div>
 
               <div className="flex gap-3 mt-6 no-print">
-                <button onClick={() => setFidelityClient(null)} className="flex-1 py-3 rounded-2xl bg-white/70 border border-border text-ink/60 font-semibold">Fermer</button>
+                <button onClick={() => setFidelityClient(null)} className="flex-1 py-3 rounded-2xl bg-surface/70 border border-border text-ink/60 font-semibold">Fermer</button>
                 <button onClick={() => window.print()} className="flex-1 btn-gradient py-3 flex items-center justify-center gap-2"><Printer size={18} /> Imprimer</button>
               </div>
             </div>
@@ -464,9 +468,9 @@ const Clients: React.FC<ClientsProps> = ({ config, user }) => {
         <h3 className="text-2xl font-serif font-bold text-ink mb-1 flex items-center gap-2"><Settings2 className="text-accent" /> Programme de fidélité</h3>
         <p className="text-ink/40 text-sm mb-6">Configurez la récompense automatique appliquée aux clients fidèles.</p>
         <div className="space-y-5">
-          <label className="flex items-center justify-between p-4 rounded-2xl bg-white/60 border border-border cursor-pointer">
+          <label className="flex items-center justify-between p-4 rounded-2xl bg-surface/60 border border-border cursor-pointer">
             <span className="font-semibold text-ink">Activer la fidélité</span>
-            <input type="checkbox" checked={cfgDraft.enabled} onChange={e => setCfgDraft({ ...cfgDraft, enabled: e.target.checked })} className="w-5 h-5 accent-[#B76E79]" />
+            <input type="checkbox" checked={cfgDraft.enabled} onChange={e => setCfgDraft({ ...cfgDraft, enabled: e.target.checked })} className="w-5 h-5 accent-[var(--color-accent)]" />
           </label>
           <div>
             <label className="text-xs font-bold uppercase tracking-widest text-ink/50 ml-1">Réservations pour une récompense</label>
@@ -480,7 +484,7 @@ const Clients: React.FC<ClientsProps> = ({ config, user }) => {
               {(['percentage', 'fixed'] as const).map(t => (
                 <button key={t} onClick={() => setCfgDraft({ ...cfgDraft, reduction_type: t })}
                   className={cn('py-3 rounded-2xl font-semibold border transition-all',
-                    cfgDraft.reduction_type === t ? 'bg-accent text-white border-accent' : 'bg-white/60 text-ink/60 border-border')}>
+                    cfgDraft.reduction_type === t ? 'bg-accent text-on-accent border-accent' : 'bg-surface/60 text-ink/60 border-border')}>
                   {t === 'percentage' ? 'Pourcentage (%)' : 'Montant fixe (DA)'}
                 </button>
               ))}
@@ -494,7 +498,7 @@ const Clients: React.FC<ClientsProps> = ({ config, user }) => {
           </div>
         </div>
         <div className="flex gap-3 mt-8">
-          <button onClick={() => setConfigOpen(false)} className="flex-1 py-3 rounded-2xl bg-white/70 border border-border text-ink/60 font-semibold">Annuler</button>
+          <button onClick={() => setConfigOpen(false)} className="flex-1 py-3 rounded-2xl bg-surface/70 border border-border text-ink/60 font-semibold">Annuler</button>
           <button onClick={saveConfig} disabled={savingConfig} className="flex-1 btn-gradient py-3 disabled:opacity-40">{savingConfig ? 'Enregistrement…' : 'Enregistrer'}</button>
         </div>
       </Modal>
@@ -508,7 +512,7 @@ const Clients: React.FC<ClientsProps> = ({ config, user }) => {
           <h3 className="text-xl font-bold text-ink">Supprimer ce client ?</h3>
           <p className="text-ink/50 mt-2 text-sm">{confirmDelete?.name} sera définitivement supprimé.</p>
           <div className="flex gap-3 mt-7">
-            <button onClick={() => setConfirmDelete(null)} className="flex-1 py-3 rounded-2xl bg-white/70 border border-border text-ink/60 font-semibold">Annuler</button>
+            <button onClick={() => setConfirmDelete(null)} className="flex-1 py-3 rounded-2xl bg-surface/70 border border-border text-ink/60 font-semibold">Annuler</button>
             <button onClick={doDelete} className="flex-1 py-3 rounded-2xl bg-red-500 text-white font-semibold hover:bg-red-600 transition-all">Supprimer</button>
           </div>
         </div>
@@ -533,7 +537,7 @@ const StatTile: React.FC<{ icon: React.ElementType; label: string; value: string
     red: 'from-red-50 to-red-100/50 text-red-500',
   } as const;
   return (
-    <div className={cn('rounded-2xl p-3.5 bg-gradient-to-br border border-white/60', tones[tone])}>
+    <div className={cn('rounded-2xl p-3.5 bg-gradient-to-br border border-border', tones[tone])}>
       <Icon size={18} className="mb-1.5" />
       <p className="text-[10px] uppercase tracking-wide font-bold text-ink/40">{label}</p>
       <p className="font-bold text-ink text-sm mt-0.5">{value}</p>
@@ -546,11 +550,11 @@ const Modal: React.FC<{ open: boolean; onClose: () => void; children: React.Reac
     {open && (
       <motion.div className="fixed inset-0 z-[60] flex items-center justify-center p-4"
         initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-        <div className="absolute inset-0 bg-ink/40 backdrop-blur-sm no-print" onClick={onClose} />
+        <div className="absolute inset-0 bg-overlay backdrop-blur-sm no-print" onClick={onClose} />
         <motion.div
           initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }}
           transition={{ type: 'spring', stiffness: 300, damping: 28 }}
-          className={cn('relative bg-white rounded-premium shadow-2xl p-7 w-full max-h-[90vh] overflow-y-auto custom-scrollbar', wide ? 'max-w-2xl' : 'max-w-md')}>
+          className={cn('relative bg-surface rounded-premium shadow-2xl p-7 w-full max-h-[90vh] overflow-y-auto custom-scrollbar', wide ? 'max-w-2xl' : 'max-w-md')}>
           <button onClick={onClose} className="absolute top-5 right-5 p-2 rounded-full hover:bg-ink/5 text-ink/40 transition-colors no-print"><X size={18} /></button>
           {children}
         </motion.div>

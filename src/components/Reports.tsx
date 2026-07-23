@@ -268,7 +268,7 @@ const Reports: React.FC = () => {
               <label className="block text-xs font-bold text-ink/50 mb-1.5 uppercase tracking-wider">Date de début</label>
               <div className="relative">
                 <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} disabled={isGenerating}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-accent/30 text-sm font-medium bg-white disabled:bg-gray-50" />
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-accent/30 text-sm font-medium bg-surface disabled:bg-gray-50" />
                 <Calendar size={15} className="absolute right-3 top-3.5 text-gray-400 pointer-events-none" />
               </div>
             </div>
@@ -276,12 +276,12 @@ const Reports: React.FC = () => {
               <label className="block text-xs font-bold text-ink/50 mb-1.5 uppercase tracking-wider">Date de fin</label>
               <div className="relative">
                 <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} disabled={isGenerating}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-accent/30 text-sm font-medium bg-white disabled:bg-gray-50" />
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-accent/30 text-sm font-medium bg-surface disabled:bg-gray-50" />
                 <Calendar size={15} className="absolute right-3 top-3.5 text-gray-400 pointer-events-none" />
               </div>
             </div>
             <button onClick={fetchData} disabled={isGenerating}
-              className="px-6 py-3 rounded-xl bg-accent text-white font-bold text-sm shadow-lg shadow-accent/20 hover:shadow-xl hover:shadow-accent/30 transition-all disabled:opacity-50 flex items-center justify-center gap-2 h-[46px]">
+              className="px-6 py-3 rounded-xl bg-accent text-on-accent font-bold text-sm shadow-lg shadow-accent/20 hover:shadow-xl hover:shadow-accent/30 transition-all disabled:opacity-50 flex items-center justify-center gap-2 h-[46px]">
               {isGenerating ? <><Loader2 size={16} className="animate-spin" />Génération...</> : <><Play size={16} />Générer le rapport</>}
             </button>
           </div>
@@ -485,7 +485,7 @@ const Reports: React.FC = () => {
                       </div>
                       <ChevronRight size={15} className="text-ink/30 flex-shrink-0" />
                     </div>
-                    <div className="h-1.5 bg-white/70 rounded-full overflow-hidden mb-2">
+                    <div className="h-1.5 bg-surface/70 rounded-full overflow-hidden mb-2">
                       <motion.div initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 1 }}
                         className={cn('h-full rounded-full', c.bar)} />
                     </div>
@@ -576,7 +576,7 @@ const Reports: React.FC = () => {
                         <span className="text-ink/50">Facturé</span>
                         <span className={cn('font-bold', p.text)}>{formatCurrency(svc.revenue)}</span>
                       </div>
-                      <div className="h-1.5 bg-white/60 rounded-full overflow-hidden">
+                      <div className="h-1.5 bg-surface/60 rounded-full overflow-hidden">
                         <motion.div initial={{ width: 0 }} animate={{ width: '100%' }} transition={{ duration: 1 }}
                           className={cn('h-full bg-gradient-to-r', p.bar)} />
                       </div>
@@ -584,7 +584,7 @@ const Reports: React.FC = () => {
                         <span className="text-ink/50">Encaissé</span>
                         <span className="font-semibold text-green-600">{formatCurrency(svc.paid)}</span>
                       </div>
-                      <div className="h-1 bg-white/60 rounded-full overflow-hidden">
+                      <div className="h-1 bg-surface/60 rounded-full overflow-hidden">
                         <motion.div initial={{ width: 0 }}
                           animate={{ width: svc.revenue > 0 ? `${(svc.paid / svc.revenue) * 100}%` : '0%' }}
                           transition={{ duration: 1 }}
@@ -820,7 +820,7 @@ const Reports: React.FC = () => {
                 <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95, y: 20 }}
                   onClick={e => e.stopPropagation()}
-                  className="bg-white rounded-3xl shadow-2xl max-w-2xl w-full max-h-[85vh] overflow-hidden flex flex-col">
+                  className="bg-surface rounded-3xl shadow-2xl max-w-2xl w-full max-h-[85vh] overflow-hidden flex flex-col">
 
                   {/* Modal header */}
                   <div className={cn('p-6 border-b border-gray-100 flex items-center justify-between flex-shrink-0',
@@ -989,11 +989,11 @@ const Reports: React.FC = () => {
                                   </div>
                                 </div>
                                 <div className="grid grid-cols-2 gap-2 text-xs mb-3">
-                                  <div className="p-2 bg-white rounded-lg border border-gray-100 flex justify-between">
+                                  <div className="p-2 bg-surface rounded-lg border border-gray-100 flex justify-between">
                                     <span className="text-ink/50">Total</span>
                                     <span className="font-semibold">{formatCurrency(d.total)}</span>
                                   </div>
-                                  <div className="p-2 bg-white rounded-lg border border-green-100 flex justify-between">
+                                  <div className="p-2 bg-surface rounded-lg border border-green-100 flex justify-between">
                                     <span className="text-ink/50">Payé</span>
                                     <span className="font-semibold text-green-600">{formatCurrency(d.paid)}</span>
                                   </div>
@@ -1133,10 +1133,10 @@ const Reports: React.FC = () => {
           {/* Export */}
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }}
             className="flex gap-3 justify-center pt-2">
-            <button className="px-6 py-3 rounded-xl bg-white border border-gray-200 hover:shadow-md transition-all flex items-center gap-2 text-sm font-semibold text-ink">
+            <button className="px-6 py-3 rounded-xl bg-surface border border-gray-200 hover:shadow-md transition-all flex items-center gap-2 text-sm font-semibold text-ink">
               <Download size={15} />Télécharger PDF
             </button>
-            <button className="px-6 py-3 rounded-xl bg-accent text-white shadow-lg shadow-accent/20 hover:shadow-xl transition-all flex items-center gap-2 text-sm font-semibold">
+            <button className="px-6 py-3 rounded-xl bg-accent text-on-accent shadow-lg shadow-accent/20 hover:shadow-xl transition-all flex items-center gap-2 text-sm font-semibold">
               <PieChart size={15} />Exporter Données
             </button>
           </motion.div>

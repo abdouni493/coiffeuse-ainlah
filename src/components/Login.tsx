@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
-import { Mail, Lock, User as UserIcon, Scissors, ArrowRight } from 'lucide-react';
+import { Mail, Lock, User as UserIcon, Scissors, ArrowRight, Sun, Moon } from 'lucide-react';
 import { Role } from '../types';
 import { supabase } from '../lib/supabase';
 import { fetchUserProfile } from '../lib/utils';
+import { useTheme } from '../lib/theme';
 
 interface LoginProps {
   onLogin: (user: any) => void;
@@ -22,6 +23,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const [storeName, setStoreName]             = useState<string>('Salon');
   // null = still checking; true = an admin already exists (hide create button)
   const [adminExists, setAdminExists]         = useState<boolean | null>(null);
+  const { theme, toggleTheme }                = useTheme();
 
   React.useEffect(() => { fetchConfigData(); checkAdminExists(); }, []);
 
@@ -178,6 +180,16 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
         <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-accent-light/10 blur-[120px]" />
       </div>
 
+      {/* Theme switch — available before login too */}
+      <button
+        onClick={toggleTheme}
+        title={theme === 'light' ? 'Passer en mode sombre' : 'Passer en mode clair'}
+        aria-label={theme === 'light' ? 'Passer en mode sombre' : 'Passer en mode clair'}
+        className="absolute top-6 right-6 w-11 h-11 rounded-2xl bg-surface-2 border border-border text-accent flex items-center justify-center hover:border-accent/50 transition-colors"
+      >
+        {theme === 'light' ? <Sun size={19} /> : <Moon size={19} />}
+      </button>
+
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
@@ -194,7 +206,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
             {logoUrl ? (
               <img src={logoUrl} alt="Logo" className="w-full h-full object-contain rounded-3xl" />
             ) : (
-              <Scissors className="text-white w-10 h-10" />
+              <Scissors className="text-on-accent w-10 h-10" />
             )}
           </motion.div>
           <h1 className="text-4xl font-serif font-bold text-ink tracking-tight">

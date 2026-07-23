@@ -258,19 +258,19 @@ const ReservationsOptimized: React.FC<ReservationsOptimizedProps> = ({ user: cur
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-white rounded-lg shadow p-4">
+        <div className="bg-surface rounded-lg shadow p-4">
           <p className="text-gray-600 text-sm font-semibold">Total Reservations</p>
           <p className="text-2xl font-bold text-gray-800">{stats.count}</p>
         </div>
-        <div className="bg-white rounded-lg shadow p-4">
+        <div className="bg-surface rounded-lg shadow p-4">
           <p className="text-gray-600 text-sm font-semibold">Total Revenue</p>
           <p className="text-2xl font-bold text-green-600">{formatCurrency(stats.total)}</p>
         </div>
-        <div className="bg-white rounded-lg shadow p-4">
+        <div className="bg-surface rounded-lg shadow p-4">
           <p className="text-gray-600 text-sm font-semibold">Paid</p>
           <p className="text-2xl font-bold text-blue-600">{formatCurrency(stats.paid)}</p>
         </div>
-        <div className="bg-white rounded-lg shadow p-4">
+        <div className="bg-surface rounded-lg shadow p-4">
           <p className="text-gray-600 text-sm font-semibold">Due</p>
           <p className="text-2xl font-bold text-red-600">{formatCurrency(stats.due)}</p>
         </div>
@@ -310,7 +310,7 @@ const ReservationsOptimized: React.FC<ReservationsOptimizedProps> = ({ user: cur
 
       {/* List View */}
       {view === 'list' && (
-        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+        <div className="bg-surface rounded-lg shadow-lg overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-gray-100 border-b">
@@ -418,7 +418,7 @@ const ReservationsOptimized: React.FC<ReservationsOptimizedProps> = ({ user: cur
 
       {/* Calendar View */}
       {view === 'calendar' && (
-        <div className="bg-white rounded-lg shadow-lg p-6">
+        <div className="bg-surface rounded-lg shadow-lg p-6">
           <div className="flex justify-between items-center mb-6">
             <button
               onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
@@ -452,7 +452,7 @@ const ReservationsOptimized: React.FC<ReservationsOptimizedProps> = ({ user: cur
                     'p-2 rounded-lg border-2 min-h-[100px] cursor-pointer transition-all hover:shadow-lg',
                     dayReservations.length > 0
                       ? 'border-primary bg-primary/5'
-                      : 'border-gray-200 bg-white'
+                      : 'border-gray-200 bg-surface'
                   )}
                 >
                   <p className="font-semibold text-gray-800">{format(day, 'd')}</p>
@@ -495,7 +495,7 @@ const ReservationsOptimized: React.FC<ReservationsOptimizedProps> = ({ user: cur
               animate={{ scale: 1 }}
               exit={{ scale: 0.95 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-white rounded-lg shadow-lg max-w-sm w-full mx-4"
+              className="bg-surface rounded-lg shadow-lg max-w-sm w-full mx-4"
             >
               <div className="p-6">
                 <div className="flex items-center gap-3 mb-4">

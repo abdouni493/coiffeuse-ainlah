@@ -360,7 +360,7 @@ const Sales: React.FC<SalesProps> = ({ config }) => {
                 onClick={() => setBarcodeScanMode(!barcodeScanMode)}
                 className={cn('relative w-12 h-6 rounded-full transition-all duration-300', barcodeScanMode ? 'bg-accent' : 'bg-ink/20')}
               >
-                <span className={cn('absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-all duration-300', barcodeScanMode ? 'left-7' : 'left-1')} />
+                <span className={cn('absolute top-1 w-4 h-4 rounded-full bg-surface shadow transition-all duration-300', barcodeScanMode ? 'left-7' : 'left-1')} />
               </button>
             </div>
 
@@ -378,7 +378,7 @@ const Sales: React.FC<SalesProps> = ({ config }) => {
               <AnimatePresence>
                 {showProductDrop && productResults.length > 0 && (
                   <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
-                    className="absolute top-full mt-2 left-0 right-0 bg-white border border-border rounded-2xl shadow-xl z-30 overflow-hidden">
+                    className="absolute top-full mt-2 left-0 right-0 bg-surface border border-border rounded-2xl shadow-xl z-30 overflow-hidden">
                     {productResults.map(p => (
                       <button key={p.id} onClick={() => selectProduct(p)}
                         className="w-full px-4 py-3 text-left hover:bg-accent/5 border-b border-border/50 last:border-0 flex items-center justify-between gap-4">
@@ -418,9 +418,9 @@ const Sales: React.FC<SalesProps> = ({ config }) => {
                       <td className="px-4 py-2.5 text-center">
                         {!item.isDetail ? (
                           <div className="flex items-center justify-center gap-2">
-                            <button onClick={() => setCart(prev => prev.map((i, n) => n === idx ? { ...i, quantity: Math.max(1, i.quantity - 1) } : i))} className="w-6 h-6 rounded-full bg-ink/10 text-ink/60 hover:bg-accent hover:text-white transition-all text-xs font-bold">−</button>
+                            <button onClick={() => setCart(prev => prev.map((i, n) => n === idx ? { ...i, quantity: Math.max(1, i.quantity - 1) } : i))} className="w-6 h-6 rounded-full bg-ink/10 text-ink/60 hover:bg-accent hover:text-on-accent transition-all text-xs font-bold">−</button>
                             <span className="w-8 text-center font-bold">{item.quantity}</span>
-                            <button onClick={() => setCart(prev => prev.map((i, n) => n === idx ? { ...i, quantity: i.quantity + 1 } : i))} className="w-6 h-6 rounded-full bg-ink/10 text-ink/60 hover:bg-accent hover:text-white transition-all text-xs font-bold">+</button>
+                            <button onClick={() => setCart(prev => prev.map((i, n) => n === idx ? { ...i, quantity: i.quantity + 1 } : i))} className="w-6 h-6 rounded-full bg-ink/10 text-ink/60 hover:bg-accent hover:text-on-accent transition-all text-xs font-bold">+</button>
                           </div>
                         ) : <span className="font-bold">{item.detailQtyUsed}</span>}
                       </td>
@@ -458,7 +458,7 @@ const Sales: React.FC<SalesProps> = ({ config }) => {
                   <AnimatePresence>
                     {showClientDrop && clientResults.length > 0 && (
                       <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
-                        className="absolute top-full mt-1 left-0 right-0 bg-white border border-border rounded-2xl shadow-xl z-30 overflow-hidden">
+                        className="absolute top-full mt-1 left-0 right-0 bg-surface border border-border rounded-2xl shadow-xl z-30 overflow-hidden">
                         {clientResults.map((c: any) => (
                           <button key={c.id} onClick={() => { setSelectedClient({ id: c.id, name: c.name, phone: c.phone }); setClientQuery(''); setShowClientDrop(false); }}
                             className="w-full px-3 py-2 text-left hover:bg-accent/5 border-b border-border/50 last:border-0 text-sm">
@@ -475,7 +475,7 @@ const Sales: React.FC<SalesProps> = ({ config }) => {
                   <div className="space-y-2 p-3 rounded-xl bg-primary-bg/40">
                     <input type="text" value={newClientName} onChange={e => setNewClientName(e.target.value)} className="input-premium w-full py-2 text-sm" placeholder="Nom *" />
                     <input type="text" value={newClientPhone} onChange={e => setNewClientPhone(e.target.value)} className="input-premium w-full py-2 text-sm" placeholder="Téléphone" />
-                    <button onClick={createClient} disabled={!newClientName.trim()} className="w-full py-1.5 rounded-xl bg-accent text-white text-xs font-bold hover:bg-accent/90 transition-all disabled:opacity-50">Créer</button>
+                    <button onClick={createClient} disabled={!newClientName.trim()} className="w-full py-1.5 rounded-xl bg-accent text-on-accent text-xs font-bold hover:bg-accent/90 transition-all disabled:opacity-50">Créer</button>
                   </div>
                 )}
               </div>
@@ -512,7 +512,7 @@ const Sales: React.FC<SalesProps> = ({ config }) => {
           {(['all', 'paid', 'debt'] as const).map(f => (
             <button key={f} onClick={() => setHistoryFilter(f)} className={cn(
               'px-5 py-2 rounded-2xl text-xs font-bold uppercase tracking-widest whitespace-nowrap transition-all',
-              historyFilter === f ? 'bg-accent text-white' : 'bg-white/40 border border-border text-ink/40 hover:text-accent hover:border-accent/40'
+              historyFilter === f ? 'bg-accent text-on-accent' : 'bg-surface/40 border border-border text-ink/40 hover:text-accent hover:border-accent/40'
             )}>
               {f === 'all' ? 'Toutes' : f === 'paid' ? 'Payées' : 'Dettes'}
             </button>
@@ -558,8 +558,8 @@ const Sales: React.FC<SalesProps> = ({ config }) => {
       <AnimatePresence>
         {/* Detail qty modal */}
         {detailModal && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-ink/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} exit={{ scale: 0.9 }} className="bg-white rounded-3xl shadow-2xl w-full max-w-sm p-8 space-y-5">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-overlay backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} exit={{ scale: 0.9 }} className="bg-surface rounded-3xl shadow-2xl w-full max-w-sm p-8 space-y-5">
               <h3 className="text-xl font-serif font-bold text-ink">{detailModal.name}</h3>
               <p className="text-sm text-ink/50">Stock disponible: <strong className="text-emerald-600">{detailModal.currentDetailStock} {detailModal.detail_unit}</strong></p>
               <div>
@@ -581,8 +581,8 @@ const Sales: React.FC<SalesProps> = ({ config }) => {
 
         {/* Invoice modal */}
         {modal === 'invoice' && invoiceData && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-ink/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }} className="bg-white rounded-3xl shadow-2xl w-full max-w-md p-8 space-y-5">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-overlay backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }} className="bg-surface rounded-3xl shadow-2xl w-full max-w-md p-8 space-y-5">
               <div className="text-center">
                 <div className="w-14 h-14 rounded-2xl bg-emerald-100 flex items-center justify-center mx-auto mb-3"><Check className="text-emerald-600" size={28} /></div>
                 <h3 className="text-xl font-serif font-bold text-ink">Vente enregistrée !</h3>
@@ -604,8 +604,8 @@ const Sales: React.FC<SalesProps> = ({ config }) => {
 
         {/* Details modal */}
         {modal === 'details' && selectedSale && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-ink/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }} className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-overlay backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }} className="bg-surface rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
               <div className="p-8 space-y-5">
                 <div className="flex items-center justify-between">
                   <div>
@@ -662,8 +662,8 @@ const Sales: React.FC<SalesProps> = ({ config }) => {
 
         {/* Pay debt modal */}
         {modal === 'pay' && selectedSale && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-ink/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} exit={{ scale: 0.9 }} className="bg-white rounded-3xl shadow-2xl w-full max-w-md p-8 space-y-5">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-overlay backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} exit={{ scale: 0.9 }} className="bg-surface rounded-3xl shadow-2xl w-full max-w-md p-8 space-y-5">
               <div className="flex items-center justify-between">
                 <h3 className="text-xl font-serif font-bold text-ink">Payer la dette</h3>
                 <button onClick={() => setModal(null)} className="p-2 rounded-xl hover:bg-primary-bg text-ink/40"><X size={20} /></button>
@@ -687,8 +687,8 @@ const Sales: React.FC<SalesProps> = ({ config }) => {
         )}
 
         {modal === 'delete' && selectedSale && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-ink/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} exit={{ scale: 0.9 }} className="bg-white rounded-3xl shadow-2xl w-full max-w-sm p-8 space-y-5 text-center">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-overlay backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} exit={{ scale: 0.9 }} className="bg-surface rounded-3xl shadow-2xl w-full max-w-sm p-8 space-y-5 text-center">
               <div className="w-14 h-14 rounded-2xl bg-red-100 flex items-center justify-center mx-auto"><Trash2 className="text-red-500" size={24} /></div>
               <div>
                 <h3 className="text-xl font-serif font-bold text-ink mb-1">Supprimer cette vente ?</h3>

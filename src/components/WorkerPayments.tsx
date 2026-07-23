@@ -156,7 +156,7 @@ const WorkerPayments: React.FC<WorkerPaymentsProps> = ({ user }) => {
             onClick={() => setActiveTab(tab.key)}
             className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-200 flex items-center gap-1.5 ${
               activeTab === tab.key
-                ? 'bg-white shadow-sm text-accent border border-accent/20'
+                ? 'bg-surface shadow-sm text-accent border border-accent/20'
                 : 'text-ink/50 hover:text-ink'
             }`}
           >
@@ -259,7 +259,7 @@ const WorkerPayments: React.FC<WorkerPaymentsProps> = ({ user }) => {
                           <p className="text-[10px] font-bold uppercase tracking-widest text-ink/40 mb-3">Réservations incluses</p>
                           <div className="space-y-2">
                             {reservations.map((res, i) => (
-                              <div key={i} className="flex items-center justify-between p-3 bg-white/70 rounded-xl border border-white/80 shadow-sm">
+                              <div key={i} className="flex items-center justify-between p-3 bg-surface/70 rounded-xl border border-border shadow-sm">
                                 <div className="flex items-center gap-3">
                                   <div className={`w-7 h-7 rounded-full ${cfg.bg} border ${cfg.border} flex items-center justify-center`}>
                                     <span className={`text-xs font-bold ${cfg.text}`}>{i + 1}</span>
@@ -286,7 +286,7 @@ const WorkerPayments: React.FC<WorkerPaymentsProps> = ({ user }) => {
                             ))}
                           </div>
                           {/* Total row */}
-                          <div className={`mt-3 flex justify-between items-center px-3 py-2 rounded-xl border ${cfg.border} bg-white/40`}>
+                          <div className={`mt-3 flex justify-between items-center px-3 py-2 rounded-xl border ${cfg.border} bg-surface/40`}>
                             <span className="text-xs font-bold text-ink/50 uppercase tracking-wider">Total réservations</span>
                             <span className={`font-serif font-bold ${cfg.text}`}>
                               {formatCurrency(reservations.reduce((s, r) => s + r.amount, 0))}

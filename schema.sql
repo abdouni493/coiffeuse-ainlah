@@ -136,7 +136,8 @@ create table if not exists public.reservations (
   client_id     uuid references public.clients(id) on delete set null,
   client_name   text,
   client_phone  text,
-  prestation_id uuid references public.prestations(id) on delete set null,
+  prestation_id uuid references public.prestations(id) on delete set null, -- primary
+  prestation_ids jsonb not null default '[]'::jsonb,  -- all prestations booked
   service_ids   jsonb not null default '[]'::jsonb,   -- array of service ids
   date          date not null,
   time          text,
@@ -365,6 +366,24 @@ create table if not exists public.caisse_transactions (
   created_by  uuid references public.profiles(id) on delete set null,
   created_at  timestamptz not null default now()
 );
+
+-- =============================================================================
+--  9b. MIGRATIONS FOR EXISTING DATABASES
+-- -----------------------------------------------------------------------------
+--  `create table if not exists` above is a no-op once a table exists, so any
+--  column added after the first deployment has to be applied explicitly here.
+--  Every statement is idempotent — re-running this file is always safe.
+-- =============================================================================
+alter table public.reservations
+  add column if not exists prestation_ids   jsonb   not null default '[]'::jsonb,
+  add column if not exists discount_amount  numeric not null default 0,
+  add column if not exists fidelity_applied boolean not null default false;
+
+-- Back-fill prestation_ids for rows created before multi-prestation support.
+update public.reservations
+   set prestation_ids = jsonb_build_array(prestation_id)
+ where prestation_id is not null
+   and (prestation_ids is null or prestation_ids = '[]'::jsonb);
 
 -- =============================================================================
 --  10. INDEXES

@@ -152,19 +152,19 @@ const Prestations: React.FC = () => {
               className="card-premium p-8 flex flex-col group hover:translate-y-[-4px] transition-all duration-300"
             >
               <div className="flex justify-between items-start mb-6">
-                <div className="w-14 h-14 rounded-2xl bg-accent/10 flex items-center justify-center text-accent shadow-inner group-hover:bg-accent group-hover:text-white transition-all duration-500">
+                <div className="w-14 h-14 rounded-2xl bg-accent/10 flex items-center justify-center text-accent shadow-inner group-hover:bg-accent group-hover:text-on-accent transition-all duration-500">
                   <Scissors size={28} />
                 </div>
                 <div className="flex gap-2 opacity-100 transition-all duration-300">
                   <button 
                     onClick={() => openModal('prestation', 'edit', p)}
-                    className="p-2.5 rounded-xl bg-white border border-border text-ink/40 hover:text-accent hover:border-accent/40 transition-all shadow-sm"
+                    className="p-2.5 rounded-xl bg-surface border border-border text-ink/40 hover:text-accent hover:border-accent/40 transition-all shadow-sm"
                   >
                     <Edit2 size={18} />
                   </button>
                   <button 
                     onClick={() => confirmDelete('prestation', p.id, p.name)}
-                    className="p-2.5 rounded-xl bg-white border border-border text-red-400 hover:text-red-600 hover:border-red-200 transition-all shadow-sm"
+                    className="p-2.5 rounded-xl bg-surface border border-border text-red-400 hover:text-red-600 hover:border-red-200 transition-all shadow-sm"
                   >
                     <Trash2 size={18} />
                   </button>
@@ -194,7 +194,7 @@ const Prestations: React.FC = () => {
           </div>
           <button 
             onClick={() => openModal('service', 'add')}
-            className="px-8 py-3 rounded-2xl bg-white border border-border text-sm font-bold text-ink/60 hover:text-accent hover:border-accent/40 transition-all duration-300 flex items-center gap-2.5 shadow-sm"
+            className="px-8 py-3 rounded-2xl bg-surface border border-border text-sm font-bold text-ink/60 hover:text-accent hover:border-accent/40 transition-all duration-300 flex items-center gap-2.5 shadow-sm"
           >
             <Plus size={20} /> Ajouter un service
           </button>
@@ -249,13 +249,13 @@ const Prestations: React.FC = () => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={closeModal}
-              className="absolute inset-0 bg-ink/60 backdrop-blur-sm"
+              className="absolute inset-0 bg-overlay backdrop-blur-sm"
             />
             <motion.div 
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-lg bg-white rounded-[24px] md:rounded-[32px] shadow-2xl overflow-hidden mx-auto max-h-[90vh] flex flex-col"
+              className="relative w-full max-w-lg bg-surface rounded-[24px] md:rounded-[32px] shadow-2xl overflow-hidden mx-auto max-h-[90vh] flex flex-col"
             >
               <div className="p-5 md:p-8 overflow-y-auto custom-scrollbar">
                 <div className="flex justify-between items-center mb-6">
@@ -300,7 +300,7 @@ const Prestations: React.FC = () => {
                 </div>
 
                 <div className="flex gap-4 pt-4">
-                  <button onClick={closeModal} className="flex-1 py-4 rounded-2xl bg-white border border-border font-bold text-ink/40 hover:text-ink transition-all">Annuler</button>
+                  <button onClick={closeModal} className="flex-1 py-4 rounded-2xl bg-surface border border-border font-bold text-ink/40 hover:text-ink transition-all">Annuler</button>
                   <button 
                     onClick={handleSave}
                     disabled={!formData.name || !formData.price}
@@ -324,13 +324,13 @@ const Prestations: React.FC = () => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setDeleteConfirm(null)}
-              className="absolute inset-0 bg-ink/60 backdrop-blur-sm"
+              className="absolute inset-0 bg-overlay backdrop-blur-sm"
             />
             <motion.div 
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-md bg-white rounded-[24px] md:rounded-[32px] shadow-2xl overflow-hidden mx-auto"
+              className="relative w-full max-w-md bg-surface rounded-[24px] md:rounded-[32px] shadow-2xl overflow-hidden mx-auto"
             >
               <div className="p-6 md:p-8 text-center space-y-6">
                 <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-red-50 flex items-center justify-center text-red-500 mx-auto">
@@ -343,7 +343,7 @@ const Prestations: React.FC = () => {
                   </p>
                 </div>
                 <div className="flex gap-4 pt-4">
-                  <button onClick={() => setDeleteConfirm(null)} className="flex-1 py-4 rounded-2xl bg-white border border-border font-bold text-ink/40 hover:text-ink transition-all">Annuler</button>
+                  <button onClick={() => setDeleteConfirm(null)} className="flex-1 py-4 rounded-2xl bg-surface border border-border font-bold text-ink/40 hover:text-ink transition-all">Annuler</button>
                   <button 
                     onClick={handleDelete}
                     className="flex-1 py-4 rounded-2xl bg-red-500 text-white font-bold hover:bg-red-600 transition-all shadow-lg shadow-red-500/20"

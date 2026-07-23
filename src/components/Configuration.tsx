@@ -238,7 +238,7 @@ const Configuration: React.FC<ConfigurationProps> = ({ user, config: initialConf
                 className={cn(
                   "w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-300",
                   activeTab === tab.id 
-                    ? "bg-accent text-white shadow-lg shadow-accent/20" 
+                    ? "bg-accent text-on-accent shadow-lg shadow-accent/20" 
                     : "text-ink/60 hover:bg-accent/5 hover:text-accent"
                 )}
               >
@@ -280,7 +280,7 @@ const Configuration: React.FC<ConfigurationProps> = ({ user, config: initialConf
                       />
                       <button 
                         onClick={() => fileInputRef.current?.click()}
-                        className="absolute -bottom-2 -right-2 p-2 bg-white rounded-xl shadow-lg border border-border text-accent hover:scale-110 transition-transform"
+                        className="absolute -bottom-2 -right-2 p-2 bg-surface rounded-xl shadow-lg border border-border text-accent hover:scale-110 transition-transform"
                       >
                         <Upload size={16} />
                       </button>
@@ -392,7 +392,7 @@ const Configuration: React.FC<ConfigurationProps> = ({ user, config: initialConf
                     <button
                       onClick={handleSaveConfig}
                       disabled={isSaving}
-                      className="flex items-center gap-2 px-8 py-3 bg-accent text-white rounded-2xl font-bold shadow-lg shadow-accent/20 hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:hover:scale-100"
+                      className="flex items-center gap-2 px-8 py-3 bg-accent text-on-accent rounded-2xl font-bold shadow-lg shadow-accent/20 hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:hover:scale-100"
                     >
                       {isSaving ? <RefreshCw className="animate-spin" size={20} /> : <Save size={20} />}
                       Enregistrer les modifications
@@ -421,7 +421,7 @@ const Configuration: React.FC<ConfigurationProps> = ({ user, config: initialConf
                       />
                       <button 
                         onClick={() => avatarInputRef.current?.click()}
-                        className="absolute -bottom-2 -right-2 p-2 bg-white rounded-xl shadow-lg border border-border text-accent hover:scale-110 transition-transform"
+                        className="absolute -bottom-2 -right-2 p-2 bg-surface rounded-xl shadow-lg border border-border text-accent hover:scale-110 transition-transform"
                       >
                         <Upload size={16} />
                       </button>
@@ -480,7 +480,7 @@ const Configuration: React.FC<ConfigurationProps> = ({ user, config: initialConf
                     <button
                       onClick={handleSaveConfig}
                       disabled={isSaving}
-                      className="flex items-center gap-2 px-8 py-3 bg-accent text-white rounded-2xl font-bold shadow-lg shadow-accent/20 hover:scale-105 active:scale-95 transition-all disabled:opacity-50"
+                      className="flex items-center gap-2 px-8 py-3 bg-accent text-on-accent rounded-2xl font-bold shadow-lg shadow-accent/20 hover:scale-105 active:scale-95 transition-all disabled:opacity-50"
                     >
                       {isSaving ? <RefreshCw className="animate-spin" size={20} /> : <Save size={20} />}
                       Enregistrer le profil
@@ -511,7 +511,7 @@ const Configuration: React.FC<ConfigurationProps> = ({ user, config: initialConf
                       <p className="text-sm text-ink/60 mt-1 mb-6">Téléchargez une copie complète de votre base de données au format JSON.</p>
                       <button 
                         onClick={handleBackup}
-                        className="w-full py-3 bg-white border border-border rounded-2xl font-bold text-ink hover:bg-accent hover:text-white hover:border-accent transition-all"
+                        className="w-full py-3 bg-surface border border-border rounded-2xl font-bold text-ink hover:bg-accent hover:text-on-accent hover:border-accent transition-all"
                       >
                         Créer une sauvegarde
                       </button>
@@ -532,7 +532,7 @@ const Configuration: React.FC<ConfigurationProps> = ({ user, config: initialConf
                       />
                       <button 
                         onClick={() => restoreInputRef.current?.click()}
-                        className="w-full py-3 bg-white border border-border rounded-2xl font-bold text-red-500 hover:bg-red-500 hover:text-white hover:border-red-500 transition-all"
+                        className="w-full py-3 bg-surface border border-border rounded-2xl font-bold text-red-500 hover:bg-red-500 hover:text-white hover:border-red-500 transition-all"
                       >
                         Restaurer depuis un fichier
                       </button>

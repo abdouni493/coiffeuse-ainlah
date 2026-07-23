@@ -269,7 +269,7 @@ const Products: React.FC = () => {
         <input
           type="text" placeholder="Rechercher par nom, code-barres ou catégorie..."
           value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
-          className="w-full pl-12 pr-4 py-3 rounded-2xl bg-white/40 border border-border text-ink placeholder:text-ink/40 font-medium focus:outline-none focus:border-accent/40 focus:bg-white transition-all"
+          className="w-full pl-12 pr-4 py-3 rounded-2xl bg-surface/40 border border-border text-ink placeholder:text-ink/40 font-medium focus:outline-none focus:border-accent/40 focus:bg-surface transition-all"
         />
       </div>
 
@@ -334,8 +334,8 @@ const Products: React.FC = () => {
       {/* ─── Modals ─────────────────────────────────────────────────────── */}
       <AnimatePresence>
         {(modal === 'create' || modal === 'edit') && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-ink/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-overlay backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="bg-surface rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
               <div className="p-8 space-y-6">
                 <div className="flex items-center justify-between">
                   <h3 className="text-2xl font-serif font-bold text-ink">{modal === 'create' ? 'Ajouter un produit' : 'Modifier le produit'}</h3>
@@ -409,7 +409,7 @@ const Products: React.FC = () => {
                           onClick={() => setForm(f => ({ ...f, sellByDetail: !f.sellByDetail }))}
                           className={cn('relative w-12 h-6 rounded-full transition-all duration-300', form.sellByDetail ? 'bg-accent' : 'bg-ink/20')}
                         >
-                          <span className={cn('absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-all duration-300', form.sellByDetail ? 'left-7' : 'left-1')} />
+                          <span className={cn('absolute top-1 w-4 h-4 rounded-full bg-surface shadow transition-all duration-300', form.sellByDetail ? 'left-7' : 'left-1')} />
                         </button>
                       </div>
                       {form.sellByDetail && (
@@ -454,8 +454,8 @@ const Products: React.FC = () => {
         )}
 
         {modal === 'details' && selectedProduct && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-ink/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }} className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-overlay backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }} className="bg-surface rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
               <div className="p-8 space-y-6">
                 <div className="flex items-center justify-between">
                   <h3 className="text-2xl font-serif font-bold text-ink">{selectedProduct.name}</h3>
@@ -507,8 +507,8 @@ const Products: React.FC = () => {
         )}
 
         {modal === 'delete' && selectedProduct && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-ink/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} exit={{ scale: 0.9 }} className="bg-white rounded-3xl shadow-2xl w-full max-w-md p-8 space-y-6">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-overlay backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} exit={{ scale: 0.9 }} className="bg-surface rounded-3xl shadow-2xl w-full max-w-md p-8 space-y-6">
               <div className="w-16 h-16 rounded-2xl bg-red-100 flex items-center justify-center mx-auto">
                 <Trash2 className="text-red-500" size={28} />
               </div>

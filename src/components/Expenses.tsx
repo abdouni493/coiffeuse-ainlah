@@ -160,7 +160,7 @@ const Expenses: React.FC = () => {
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            <button className="p-3.5 rounded-2xl bg-white border border-border text-ink/40 hover:text-accent hover:border-accent/40 transition-all shadow-sm">
+            <button className="p-3.5 rounded-2xl bg-surface border border-border text-ink/40 hover:text-accent hover:border-accent/40 transition-all shadow-sm">
               <Filter size={20} />
             </button>
           </div>
@@ -224,9 +224,9 @@ const Expenses: React.FC = () => {
           <motion.div 
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="card-premium p-8 bg-gradient-to-br from-accent to-accent/80 text-white border-none shadow-xl shadow-accent/20 relative overflow-hidden"
+            className="card-premium p-8 bg-gradient-to-br from-accent to-accent/80 text-on-accent border-none shadow-xl shadow-accent/20 relative overflow-hidden"
           >
-            <div className="absolute -right-10 -top-10 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>
+            <div className="absolute -right-10 -top-10 w-40 h-40 bg-surface/10 rounded-full blur-3xl"></div>
             <h3 className="text-xl font-serif font-bold mb-2 relative z-10">Total Dépenses</h3>
             <p className="text-white/60 text-sm mb-8 relative z-10 font-medium">Mois de Mars 2025</p>
             <div className="text-5xl font-serif font-bold mb-10 relative z-10 tracking-tight">
@@ -247,13 +247,13 @@ const Expenses: React.FC = () => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsModalOpen(false)}
-              className="absolute inset-0 bg-ink/40 backdrop-blur-md"
+              className="absolute inset-0 bg-overlay backdrop-blur-md"
             />
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-lg bg-white rounded-[24px] md:rounded-[32px] shadow-2xl overflow-hidden max-h-[90vh] flex flex-col"
+              className="relative w-full max-w-lg bg-surface rounded-[24px] md:rounded-[32px] shadow-2xl overflow-hidden max-h-[90vh] flex flex-col"
             >
               <div className="p-6 md:p-8 border-b border-border/50 flex items-center justify-between bg-primary-bg/30">
                 <div>
@@ -266,7 +266,7 @@ const Expenses: React.FC = () => {
                 </div>
                 <button 
                   onClick={() => setIsModalOpen(false)}
-                  className="p-2 md:p-3 rounded-2xl hover:bg-white text-ink/40 transition-colors"
+                  className="p-2 md:p-3 rounded-2xl hover:bg-surface text-ink/40 transition-colors"
                 >
                   <X size={20} />
                 </button>
@@ -341,7 +341,7 @@ const Expenses: React.FC = () => {
                   </button>
                   <button
                     type="submit"
-                    className="flex-[2] py-4 rounded-2xl bg-accent text-white font-bold shadow-lg shadow-accent/20 hover:bg-accent/90 transition-all"
+                    className="flex-[2] py-4 rounded-2xl bg-accent text-on-accent font-bold shadow-lg shadow-accent/20 hover:bg-accent/90 transition-all"
                   >
                     {editingExpense ? 'Mettre à jour' : 'Enregistrer'}
                   </button>
@@ -362,13 +362,13 @@ const Expenses: React.FC = () => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsDeleteModalOpen(false)}
-              className="absolute inset-0 bg-ink/40 backdrop-blur-md"
+              className="absolute inset-0 bg-overlay backdrop-blur-md"
             />
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-md bg-white rounded-[2.5rem] p-8 shadow-2xl text-center"
+              className="relative w-full max-w-md bg-surface rounded-[2.5rem] p-8 shadow-2xl text-center"
             >
               <div className="w-20 h-20 bg-red-50 rounded-3xl flex items-center justify-center text-red-500 mx-auto mb-6">
                 <AlertCircle size={40} />
