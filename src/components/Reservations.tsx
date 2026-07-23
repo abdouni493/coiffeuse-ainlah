@@ -105,16 +105,17 @@ interface ClientPickerProps {
   onSelect: (client: PickerClient) => void;
   onClear: () => void;
   onCreate: (name: string, phone: string) => Promise<PickerClient | null>;
+  defaultTab?: 'search' | 'create';
 }
 
 // Reusable client step used by both reservation flows. It lets the operator
 // search an existing client (by name or phone) and pick it, OR create a brand
 // new client that is persisted to the database right away.
 const ClientPicker: React.FC<ClientPickerProps> = ({
-  theme = 'accent', clients, name, phone, selectedId, onSelect, onClear, onCreate,
+  theme = 'accent', clients, name, phone, selectedId, onSelect, onClear, onCreate, defaultTab = 'search',
 }) => {
   const t = PICKER_THEMES[theme];
-  const [tab, setTab] = useState<'search' | 'create'>('search');
+  const [tab, setTab] = useState<'search' | 'create'>(defaultTab);
   const [query, setQuery] = useState('');
   const [newName, setNewName] = useState('');
   const [newPhone, setNewPhone] = useState('');
@@ -1994,6 +1995,7 @@ const Reservations: React.FC<ReservationsProps> = ({ user: currentUser, config }
                   <div className="space-y-8">
                     <ClientPicker
                       theme="accent"
+                      defaultTab="create"
                       clients={clients}
                       name={clientInfo.name}
                       phone={clientInfo.phone}
