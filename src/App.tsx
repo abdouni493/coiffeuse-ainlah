@@ -20,17 +20,21 @@ import Caisse from './components/Caisse';
 import { User, StoreConfig, Role } from './types';
 import { supabase } from './lib/supabase';
 import { fetchUserProfile } from './lib/utils';
+import { canViewInterface, firstAllowedTab } from './lib/permissions';
 import { ACTIVE_TAB_KEY } from './lib/localStorageService';
 
 const DEFAULT_TAB_ADMIN  = 'dashboard';
-const DEFAULT_TAB_WORKER = 'reservations';
 
-function getStoredTab(role?: string): string {
+function getStoredTab(userData: Pick<User, 'role' | 'permissions'>): string {
+  const isAdmin = userData.role === 'admin' || userData.role === 'super_admin';
   try {
     const stored = sessionStorage.getItem(ACTIVE_TAB_KEY);
-    if (stored) return stored;
+    // Only restore a stored tab the user is actually allowed to open.
+    if (stored && (isAdmin || stored === 'my-payments' || canViewInterface(userData, stored))) {
+      return stored;
+    }
   } catch { /* ignore */ }
-  return role === 'worker' ? DEFAULT_TAB_WORKER : DEFAULT_TAB_ADMIN;
+  return isAdmin ? DEFAULT_TAB_ADMIN : firstAllowedTab(userData);
 }
 
 function saveTab(tab: string): void {
@@ -82,12 +86,13 @@ const App: React.FC = () => {
               percentage:  profileData.percentage,
               dailyRate:   profileData.daily_rate,
               monthlyRate: profileData.monthly_rate,
+              permissions: profileData.permissions || {},
               createdAt:   profileData.created_at,
             };
             setUser(userData);
             setIsAuthenticated(true);
-            // Restore the last visited tab (fallback to role default)
-            setActiveTab(getStoredTab(profileData.role));
+            // Restore the last visited tab (fallback to role/permission default)
+            setActiveTab(getStoredTab(userData));
           } else {
             await supabase.auth.signOut();
           }
@@ -160,7 +165,7 @@ const App: React.FC = () => {
     setIsAuthenticated(true);
     const defaultTab = (userData.role === 'admin' || userData.role === 'super_admin')
       ? DEFAULT_TAB_ADMIN
-      : DEFAULT_TAB_WORKER;
+      : firstAllowedTab(userData);
     setActiveTab(defaultTab);
   };
 
@@ -188,17 +193,26 @@ const App: React.FC = () => {
     return <Login onLogin={handleLogin} />;
   }
 
+  const isAdmin = user?.role === 'admin' || user?.role === 'super_admin';
+  // A worker may only render a tab they are allowed to open. If the active tab
+  // is not permitted (stale state, direct switch, revoked access), fall back to
+  // their first allowed interface.
+  const effectiveTab = (!isAdmin && user)
+    ? (activeTab === 'my-payments' || canViewInterface(user, activeTab) ? activeTab : firstAllowedTab(user))
+    : activeTab;
+
   return (
     <div className="flex min-h-screen bg-primary-bg">
       <Sidebar
         role={user?.role || 'worker'}
-        activeTab={activeTab}
+        activeTab={effectiveTab}
         setActiveTab={setActiveTab}
         onLogout={handleLogout}
         isCollapsed={isSidebarCollapsed}
         setIsCollapsed={setIsSidebarCollapsed}
         isMobile={isMobile}
         config={storeConfig}
+        permissions={user?.permissions}
       />
 
       <div className={"flex-1 flex flex-col min-w-0 " + (!isSidebarCollapsed && !isMobile ? 'ml-[280px]' : '')}>
@@ -213,26 +227,26 @@ const App: React.FC = () => {
           <div className="max-w-7xl mx-auto">
             <AnimatePresence mode="wait">
               <motion.div
-                key={activeTab}
+                key={effectiveTab}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.3 }}
               >
-                {activeTab === 'dashboard'        && <Dashboard setActiveTab={setActiveTab} user={user} />}
-                {activeTab === 'reservations'     && <Reservations user={user!} config={storeConfig} />}
-                {activeTab === 'clients'          && <Clients config={storeConfig} />}
-                {activeTab === 'my-payments'      && <WorkerPayments user={user!} />}
-                {activeTab === 'prestations'      && <Prestations />}
-                {activeTab === 'employees'        && <Employees />}
-                {activeTab === 'suppliers'        && <Inventory initialTab="suppliers" />}
-                {activeTab === 'products'         && <Products />}
-                {activeTab === 'product-purchases'&& <ProductPurchases />}
-                {activeTab === 'sales'            && <Sales config={storeConfig} />}
-                {activeTab === 'caisse'           && <Caisse user={user!} />}
-                {activeTab === 'expenses'         && <Expenses />}
-                {activeTab === 'reports'          && <Reports />}
-                {activeTab === 'config'           && <Configuration user={user!} config={storeConfig} />}
+                {effectiveTab === 'dashboard'        && <Dashboard setActiveTab={setActiveTab} user={user} />}
+                {effectiveTab === 'reservations'     && <Reservations user={user!} config={storeConfig} />}
+                {effectiveTab === 'clients'          && <Clients config={storeConfig} user={user!} />}
+                {effectiveTab === 'my-payments'      && <WorkerPayments user={user!} />}
+                {effectiveTab === 'prestations'      && <Prestations />}
+                {effectiveTab === 'employees'        && <Employees />}
+                {effectiveTab === 'suppliers'        && <Inventory initialTab="suppliers" />}
+                {effectiveTab === 'products'         && <Products />}
+                {effectiveTab === 'product-purchases'&& <ProductPurchases />}
+                {effectiveTab === 'sales'            && <Sales config={storeConfig} />}
+                {effectiveTab === 'caisse'           && <Caisse user={user!} />}
+                {effectiveTab === 'expenses'         && <Expenses />}
+                {effectiveTab === 'reports'          && <Reports />}
+                {effectiveTab === 'config'           && <Configuration user={user!} config={storeConfig} />}
               </motion.div>
             </AnimatePresence>
           </div>

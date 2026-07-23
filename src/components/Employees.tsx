@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Plus, Edit2, Trash2, User, Phone, MapPin, Briefcase, DollarSign, Calendar, X, Check, AlertCircle, Lock, Mail, MinusCircle, PlusCircle, History } from 'lucide-react';
+import { Plus, Edit2, Trash2, User, Phone, MapPin, Briefcase, DollarSign, Calendar, X, Check, AlertCircle, Lock, Mail, MinusCircle, PlusCircle, History, ShieldCheck } from 'lucide-react';
 import { User as Employee, EmployeePayment } from '../types';
 import { cn, formatCurrency } from '../lib/utils';
-import { supabase } from '../lib/supabase';
+import { supabase, createSignupClient } from '../lib/supabase';
+import { PERMISSION_CATALOG, PermissionMap } from '../lib/permissions';
 
 const Employees: React.FC = () => {
   const [employees, setEmployees] = useState<Employee[]>([]);
@@ -84,7 +85,10 @@ const Employees: React.FC = () => {
     email: '',
     password: '',
     hireDate: new Date().toISOString().split('T')[0],
+    permissions: {} as PermissionMap,
   });
+
+  const [isSaving, setIsSaving] = useState(false);
 
   const [paymentFormData, setPaymentFormData] = useState({
     amount: '',
@@ -139,6 +143,28 @@ const Employees: React.FC = () => {
     paymentAmount: '',
     paymentPercentage: '',
     usePercentage: false,
+  });
+
+  // Percentage payment interface state — lists the worker's UNPAID commission
+  // reservations together with their unpaid acomptes/absences and an editable
+  // net amount that the admin can override before validating the payment.
+  const [percentagePaymentMode, setPercentagePaymentMode] = useState<{
+    isActive: boolean;
+    reservations: Array<{
+      reservationWorkerId: string;
+      reservationId: string;
+      clientName: string;
+      clientPhone: string;
+      date: string;
+      basePrice: number;
+      commission: number;
+      percentage: number;
+    }>;
+    editedAmount: string;
+  }>({
+    isActive: false,
+    reservations: [],
+    editedAmount: '',
   });
 
   // Helper function to format date without timezone conversion
@@ -216,7 +242,8 @@ const Employees: React.FC = () => {
           percentage: p.percentage,
           dailyRate: p.daily_rate,
           monthlyRate: p.monthly_rate,
-          hireDate: p.hire_date
+          hireDate: p.hire_date,
+          permissions: p.permissions || {}
         }));
       setEmployees(mappedEmployees);
     }
@@ -313,6 +340,14 @@ const Employees: React.FC = () => {
       alert('Veuillez entrer le salaire mensuel');
       return;
     }
+    if (formData.paymentType === 'days' && !formData.dailyRate) {
+      alert('Veuillez entrer le tarif journalier');
+      return;
+    }
+    if (formData.paymentType === 'percentage' && !formData.percentage) {
+      alert('Veuillez entrer le pourcentage de commission');
+      return;
+    }
 
     const employeeData = {
       username: formData.username,
@@ -326,6 +361,8 @@ const Employees: React.FC = () => {
       daily_rate: formData.paymentType === 'days' ? Number(formData.dailyRate) : null,
       monthly_rate: formData.paymentType === 'month' ? Number(formData.monthlyRate) : null,
       hire_date: formData.hireDate,
+      // Only workers carry a permission map; admins implicitly have everything.
+      permissions: formData.role === 'worker' ? formData.permissions : {},
     };
 
     if (editingEmployee) {
@@ -344,37 +381,34 @@ const Employees: React.FC = () => {
         fetchData();
       }
     } else {
-      // For adding a new employee - create auth user directly
+      // Adding a new employee → create a real Supabase Auth account (so the
+      // worker can log in), exactly like the admin account is created.
+      //
+      // We sign up through an ISOLATED client (createSignupClient) whose session
+      // is never persisted, so the admin stays logged in — no fragile
+      // save/restore of the admin session is required.
+      //
+      // The DB trigger `handle_new_user` already inserts a base profile row for
+      // the new auth user, so we must NOT insert a second one (that caused the
+      // "profiles_pkey" duplicate-key 409). Instead we UPSERT to fill in the
+      // remaining fields (payment config, permissions, …).
+      setIsSaving(true);
       try {
-        // Save current admin session before creating worker account
-        const { data: { session: currentSession } } = await supabase.auth.getSession();
-        const currentUser = currentSession?.user;
-
-        if (!currentUser) {
-          alert('Erreur: Vous devez être connecté pour créer un employé');
-          return;
-        }
-
-        console.log('[CREATE WORKER] Current admin user:', currentUser.id);
-
-        // Create auth user via signUp API (will require email confirmation by default)
-        // But Supabase email confirmation can be disabled in project settings
-        const { data: authData, error: authError } = await supabase.auth.signUp({
+        const signupClient = createSignupClient();
+        const { data: authData, error: authError } = await signupClient.auth.signUp({
           email: formData.email.toLowerCase().trim(),
           password: formData.password,
           options: {
             data: {
-              username: formData.username,
-              full_name: formData.fullName
+              username:  formData.username,
+              full_name: formData.fullName,
+              role:      formData.role, // trigger persists this role on the profile
             },
-            emailRedirectTo: `${window.location.origin}/login`
-          }
+          },
         });
 
         if (authError) {
           console.error('Error creating auth user:', authError);
-
-          // Handle specific error messages
           if (authError.message?.includes('already registered') || authError.message?.includes('already exists')) {
             alert('Erreur: Cet email est déjà utilisé. Veuillez utiliser un email différent.');
           } else if (authError.message?.includes('Invalid email')) {
@@ -391,40 +425,25 @@ const Employees: React.FC = () => {
           return;
         }
 
-        console.log('[CREATE WORKER] New worker auth user created:', authData.user.id);
-
-        // Create profile with auth user ID
+        // Fill in the profile the trigger created (upsert = no duplicate key).
         const { error: profileError } = await supabase
           .from('profiles')
-          .insert([{
-            id: authData.user.id,
-            ...employeeData,
-            created_at: new Date().toISOString(),
-          }]);
+          .upsert({ id: authData.user.id, ...employeeData }, { onConflict: 'id' });
 
         if (profileError) {
-          console.error('Error creating profile:', profileError);
-          alert('Erreur lors de la création du profil: ' + profileError.message);
+          console.error('Error saving profile:', profileError);
+          alert('Erreur lors de l\'enregistrement du profil: ' + profileError.message);
           return;
         }
 
-        console.log('[CREATE WORKER] Worker profile created, restoring admin session');
-
-        // CRITICAL: Restore the admin session immediately
-        // This prevents auto-login to the new worker account
-        if (currentSession) {
-          await supabase.auth.setSession(currentSession);
-          console.log('[CREATE WORKER] Admin session restored successfully');
-        }
-
-        // Close modal and refresh
         setIsModalOpen(false);
         resetForm();
         fetchData();
-
       } catch (error: any) {
         console.error('Error creating employee:', error);
         alert('Erreur: ' + error.message);
+      } finally {
+        setIsSaving(false);
       }
     }
   };
@@ -443,6 +462,7 @@ const Employees: React.FC = () => {
       email: '',
       password: '',
       hireDate: new Date().toISOString().split('T')[0],
+      permissions: {},
     });
   };
 
@@ -461,8 +481,29 @@ const Employees: React.FC = () => {
       email: emp.email || '',
       password: '',
       hireDate: emp.hireDate || '',
+      permissions: (emp.permissions as PermissionMap) || {},
     });
     setIsModalOpen(true);
+  };
+
+  // Toggle a single (interface, action) permission in the form. Granting any
+  // action auto-grants "view" (needed to open the interface); removing "view"
+  // clears the whole interface.
+  const togglePermission = (interfaceId: string, action: string) => {
+    setFormData(prev => {
+      const current = new Set(prev.permissions[interfaceId] || []);
+      if (current.has(action)) {
+        current.delete(action);
+        if (action === 'view') current.clear();
+      } else {
+        current.add(action);
+        if (action !== 'view') current.add('view');
+      }
+      const next: PermissionMap = { ...prev.permissions };
+      if (current.size === 0) delete next[interfaceId];
+      else next[interfaceId] = Array.from(current);
+      return { ...prev, permissions: next };
+    });
   };
 
   const openHistoryModal = async (emp: Employee) => {
@@ -1312,6 +1353,132 @@ const Employees: React.FC = () => {
     }
   };
 
+  // ===== PERCENTAGE PAYMENT FUNCTIONS =====
+
+  // Unpaid acomptes/absences for a worker (from already-loaded payments state).
+  const getUnpaidDeductions = (workerId: string) => {
+    const items = payments.filter(p =>
+      p.employeeId === workerId &&
+      (p.type === 'acompte' || p.type === 'absence') &&
+      (p.status === 'unpaid' || !p.status)
+    );
+    const acomptes = items.filter(p => p.type === 'acompte');
+    const absences = items.filter(p => p.type === 'absence');
+    return {
+      items,
+      totalAcomptes: acomptes.reduce((s, p) => s + (p.amount || 0), 0),
+      totalAbsences: absences.reduce((s, p) => s + (p.amount || 0), 0),
+      total: items.reduce((s, p) => s + (p.amount || 0), 0),
+    };
+  };
+
+  // Load all UNPAID commission reservations for a percentage worker and
+  // pre-compute the net amount (commissions − unpaid acomptes/absences).
+  const loadPercentageReservations = async (workerId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('reservation_workers')
+        .select(`
+          id, reservation_id, amount, percentage, status,
+          reservations ( id, client_name, client_phone, date, total_price )
+        `)
+        .eq('worker_id', workerId)
+        .eq('payment_type', 'percentage')
+        .eq('status', 'unpaid')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      const reservations = (data || []).map((rw: any) => ({
+        reservationWorkerId: rw.id,
+        reservationId: rw.reservation_id,
+        clientName: rw.reservations?.client_name || 'Client',
+        clientPhone: rw.reservations?.client_phone || '',
+        date: rw.reservations?.date || '',
+        basePrice: rw.reservations?.total_price || 0,
+        commission: rw.amount || 0,
+        percentage: rw.percentage || 0,
+      }));
+
+      const deductions = getUnpaidDeductions(workerId);
+      const totalCommission = reservations.reduce((s, r) => s + r.commission, 0);
+      const net = totalCommission - deductions.total;
+
+      setPercentagePaymentMode({
+        isActive: true,
+        reservations,
+        editedAmount: net > 0 ? String(Math.round(net * 100) / 100) : '0',
+      });
+    } catch (err) {
+      console.error('Error loading percentage reservations:', err);
+      alert('Erreur lors du chargement des réservations');
+    }
+  };
+
+  const savePercentagePayment = async () => {
+    if (!paymentModal.employee) return;
+    const employeeId = paymentModal.employee.id;
+    const amount = parseFloat(percentagePaymentMode.editedAmount || '0');
+    if (isNaN(amount) || amount < 0) {
+      alert('Veuillez entrer un montant valide');
+      return;
+    }
+
+    try {
+      const { reservations } = percentagePaymentMode;
+      const deductions = getUnpaidDeductions(employeeId);
+
+      // 1. Record the salary payment (with the reservations breakdown).
+      const reservationDetails = reservations.map(r => ({
+        clientName: r.clientName,
+        clientPhone: r.clientPhone,
+        date: r.date,
+        amount: r.commission,
+        percentage: r.percentage,
+      }));
+      const description =
+        `Paiement commissions - ${reservations.length} réservation(s)` +
+        (deductions.items.length ? `, ${deductions.items.length} déduction(s)` : '');
+
+      const { error: payErr } = await supabase.from('employee_payments').insert([{
+        employee_id: employeeId,
+        type: 'salary',
+        amount,
+        description,
+        date: new Date().toISOString().split('T')[0],
+        status: 'paid',
+        reservation_details: reservationDetails,
+      }]);
+      if (payErr) throw payErr;
+
+      // 2. Mark the paid commission reservations.
+      const rwIds = reservations.map(r => r.reservationWorkerId).filter(Boolean);
+      if (rwIds.length > 0) {
+        const { error } = await supabase
+          .from('reservation_workers')
+          .update({ status: 'paid' })
+          .in('id', rwIds);
+        if (error) throw error;
+      }
+
+      // 3. Mark the included acomptes/absences as paid.
+      if (deductions.items.length > 0) {
+        const { error } = await supabase
+          .from('employee_payments')
+          .update({ status: 'paid' })
+          .in('id', deductions.items.map(d => d.id));
+        if (error) throw error;
+      }
+
+      setPaymentModal({ isOpen: false, employee: null, type: 'acompte' });
+      setPercentagePaymentMode({ isActive: false, reservations: [], editedAmount: '' });
+      fetchData();
+    } catch (err) {
+      console.error('Error saving percentage payment:', err);
+      alert('Erreur lors de l\'enregistrement du paiement');
+    }
+  };
+
   const calculateNetSalary = (employeeId: string, customDays?: number) => {
     // Get the actual employee to fetch their real salary amount
     const employee = employees.find(emp => emp.id === employeeId);
@@ -1541,8 +1708,12 @@ const Employees: React.FC = () => {
                     // For journalier workers, load their reservations
                     setPaymentModal({ isOpen: true, employee: emp, type: 'payment' });
                     loadJournalierReservations(emp.id);
+                  } else if (emp.paymentType === 'percentage') {
+                    // For percentage workers, load unpaid commissions + deductions
+                    setPaymentModal({ isOpen: true, employee: emp, type: 'payment' });
+                    loadPercentageReservations(emp.id);
                   } else {
-                    // For other payment types, use the traditional payment interface
+                    // For monthly workers, use the traditional payment interface
                     setPaymentModal({ isOpen: true, employee: emp, type: 'payment' });
                     setPaymentFormData({ amount: '', description: '', date: new Date().toISOString().split('T')[0] });
                     setDateRangeOverride({ lastPaymentDate: '', currentDate: new Date().toISOString().split('T')[0] });
@@ -1581,7 +1752,7 @@ const Employees: React.FC = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              onClick={() => { setPaymentModal({ isOpen: false, employee: null, type: 'acompte' }); setDailyPaymentData({ days: '', date: new Date().toISOString().split('T')[0] }); setDateRangeOverride({ lastPaymentDate: '', currentDate: new Date().toISOString().split('T')[0] }); }}
+              onClick={() => { setPaymentModal({ isOpen: false, employee: null, type: 'acompte' }); setDailyPaymentData({ days: '', date: new Date().toISOString().split('T')[0] }); setDateRangeOverride({ lastPaymentDate: '', currentDate: new Date().toISOString().split('T')[0] }); setPercentagePaymentMode({ isActive: false, reservations: [], editedAmount: '' }); }}
               className="fixed inset-0 bg-ink/60 backdrop-blur-sm"
             />
             <motion.div
@@ -1597,7 +1768,7 @@ const Employees: React.FC = () => {
                       paymentModal.type === 'absence' ? 'Nouvelle Absence' :
                         'Calcul du Paiement'}
                   </h3>
-                  <button onClick={() => { setPaymentModal({ isOpen: false, employee: null, type: 'acompte' }); setDailyPaymentData({ days: '', date: new Date().toISOString().split('T')[0] }); setDateRangeOverride({ lastPaymentDate: '', currentDate: new Date().toISOString().split('T')[0] }); }} className="p-2 rounded-xl hover:bg-primary-bg text-ink/20 hover:text-ink transition-all">
+                  <button onClick={() => { setPaymentModal({ isOpen: false, employee: null, type: 'acompte' }); setDailyPaymentData({ days: '', date: new Date().toISOString().split('T')[0] }); setDateRangeOverride({ lastPaymentDate: '', currentDate: new Date().toISOString().split('T')[0] }); setPercentagePaymentMode({ isActive: false, reservations: [], editedAmount: '' }); }} className="p-2 rounded-xl hover:bg-primary-bg text-ink/20 hover:text-ink transition-all">
                     <X size={24} />
                   </button>
                 </div>
@@ -1760,7 +1931,103 @@ const Employees: React.FC = () => {
                   </div>
                 )}
 
-                {paymentModal.type === 'payment' && !(paymentModal.employee?.paymentType === 'days' && journalierPaymentMode.isActive) ? (
+                {/* PERCENTAGE PAYMENT INTERFACE */}
+                {paymentModal.type === 'payment' && paymentModal.employee?.paymentType === 'percentage' && percentagePaymentMode.isActive && (() => {
+                  const totalCommission = percentagePaymentMode.reservations.reduce((s, r) => s + r.commission, 0);
+                  const deductions = getUnpaidDeductions(paymentModal.employee!.id);
+                  const net = totalCommission - deductions.total;
+                  return (
+                    <div className="space-y-5 mt-5">
+                      {/* Unpaid commission reservations */}
+                      <div className="p-5 bg-white border border-border rounded-2xl shadow-sm">
+                        <div className="flex items-center gap-2 mb-4">
+                          <div className="w-1 h-6 bg-gradient-to-b from-accent to-accent/60 rounded-full"></div>
+                          <h3 className="text-sm font-bold text-ink uppercase tracking-widest">Réservations non payées ({percentagePaymentMode.reservations.length})</h3>
+                        </div>
+                        <div className="space-y-2 max-h-64 overflow-y-auto custom-scrollbar">
+                          {percentagePaymentMode.reservations.length === 0 ? (
+                            <div className="p-4 bg-ink/5 rounded-lg text-center">
+                              <p className="text-xs text-ink/40 font-medium">Aucune réservation non payée</p>
+                            </div>
+                          ) : (
+                            percentagePaymentMode.reservations.map(r => (
+                              <div key={r.reservationWorkerId} className="flex items-center gap-3 p-3 bg-ink/2 rounded-lg border border-border/40">
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-xs font-bold text-ink truncate">{r.clientName}</p>
+                                  <p className="text-[10px] text-ink/60 mt-0.5">
+                                    {r.clientPhone ? r.clientPhone + ' • ' : ''}{r.date ? new Date(r.date).toLocaleDateString('fr-FR') : ''} • {r.percentage}% de {formatCurrency(r.basePrice)}
+                                  </p>
+                                </div>
+                                <p className="font-serif font-bold text-accent text-xs whitespace-nowrap">{formatCurrency(r.commission)}</p>
+                              </div>
+                            ))
+                          )}
+                        </div>
+                        <div className="mt-3 flex justify-between items-center px-3 py-2 rounded-lg border border-accent/20 bg-accent/5">
+                          <span className="text-xs font-bold text-ink/50 uppercase tracking-wider">Total commissions</span>
+                          <span className="font-serif font-bold text-accent">{formatCurrency(totalCommission)}</span>
+                        </div>
+                      </div>
+
+                      {/* Unpaid acomptes & absences */}
+                      {deductions.items.length > 0 && (
+                        <div className="p-5 bg-white border border-border rounded-2xl shadow-sm">
+                          <div className="flex items-center gap-2 mb-4">
+                            <div className="w-1 h-6 bg-gradient-to-b from-red-500 to-red-500/60 rounded-full"></div>
+                            <h3 className="text-sm font-bold text-ink uppercase tracking-widest">Acomptes & absences non payés</h3>
+                          </div>
+                          <div className="space-y-2 max-h-40 overflow-y-auto custom-scrollbar">
+                            {deductions.items.map(d => (
+                              <div key={d.id} className="flex items-center justify-between p-3 bg-red-50/60 rounded-lg border border-red-100">
+                                <div className="min-w-0">
+                                  <p className="text-xs font-bold text-red-700">{d.type === 'acompte' ? 'Acompte' : 'Absence'}</p>
+                                  <p className="text-[10px] text-red-500/70 mt-0.5 truncate">{d.description || ''} {d.date ? '• ' + new Date(d.date).toLocaleDateString('fr-FR') : ''}</p>
+                                </div>
+                                <p className="font-serif font-bold text-red-500 text-xs">-{formatCurrency(d.amount)}</p>
+                              </div>
+                            ))}
+                          </div>
+                          <div className="mt-3 flex justify-between items-center px-3 py-2 rounded-lg border border-red-100 bg-red-50/40">
+                            <span className="text-xs font-bold text-red-500/60 uppercase tracking-wider">Total déductions</span>
+                            <span className="font-serif font-bold text-red-500">-{formatCurrency(deductions.total)}</span>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Net + editable amount */}
+                      <div className="p-5 bg-white border border-border rounded-2xl shadow-sm space-y-3">
+                        <div className="flex justify-between items-center p-3 bg-primary-bg/50 rounded-lg border border-border/30">
+                          <span className="text-sm text-ink/50 font-medium">Net calculé (commissions − déductions)</span>
+                          <span className="font-serif font-bold text-lg text-ink">{formatCurrency(net)}</span>
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-bold text-ink/40 uppercase tracking-widest ml-1">Montant à payer (modifiable)</label>
+                          <div className="relative">
+                            <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 text-ink/20" size={18} />
+                            <input
+                              type="number"
+                              value={percentagePaymentMode.editedAmount}
+                              onChange={e => setPercentagePaymentMode(prev => ({ ...prev, editedAmount: e.target.value }))}
+                              className="w-full input-premium pl-12 text-lg font-bold"
+                              placeholder="0.00 DA"
+                            />
+                          </div>
+                          {net > 0 && (
+                            <button
+                              type="button"
+                              onClick={() => setPercentagePaymentMode(prev => ({ ...prev, editedAmount: String(Math.round(net * 100) / 100) }))}
+                              className="text-[11px] font-bold text-accent hover:underline ml-1"
+                            >
+                              Réinitialiser au net calculé ({formatCurrency(net)})
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                {paymentModal.type === 'payment' && !(paymentModal.employee?.paymentType === 'days' && journalierPaymentMode.isActive) && !(paymentModal.employee?.paymentType === 'percentage' && percentagePaymentMode.isActive) ? (
                   <div className="space-y-5">
                     {(() => {
                       const employee = paymentModal.employee!;
@@ -2051,6 +2318,25 @@ const Employees: React.FC = () => {
                       <Check size={20} /> Enregistrer le Paiement
                     </button>
                   </div>
+                ) : paymentModal.type === 'payment' && paymentModal.employee?.paymentType === 'percentage' && percentagePaymentMode.isActive ? (
+                  <div className="flex gap-4 pt-8">
+                    <button
+                      onClick={() => {
+                        setPaymentModal({ isOpen: false, employee: null, type: 'acompte' });
+                        setPercentagePaymentMode({ isActive: false, reservations: [], editedAmount: '' });
+                      }}
+                      className="flex-1 py-4 rounded-2xl bg-white border border-border font-bold text-ink/40 hover:text-ink transition-all"
+                    >
+                      Annuler
+                    </button>
+                    <button
+                      onClick={savePercentagePayment}
+                      disabled={percentagePaymentMode.reservations.length === 0 && (!paymentModal.employee || getUnpaidDeductions(paymentModal.employee.id).items.length === 0)}
+                      className="flex-1 btn-gradient shimmer py-4 rounded-2xl font-bold disabled:opacity-50 flex items-center justify-center gap-2"
+                    >
+                      <Check size={20} /> Valider le Paiement
+                    </button>
+                  </div>
                 ) : (
                   <div className="space-y-6">
                     <div className="space-y-2">
@@ -2185,6 +2471,7 @@ const Employees: React.FC = () => {
                     >
                       <option value="month">Mensuel</option>
                       <option value="days">Journalier</option>
+                      <option value="percentage">Pourcentage</option>
                     </select>
                   </div>
                   {formData.paymentType === 'month' && (
@@ -2200,6 +2487,39 @@ const Employees: React.FC = () => {
                           placeholder="Ex: 60000"
                         />
                       </div>
+                    </div>
+                  )}
+                  {formData.paymentType === 'days' && (
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-bold uppercase tracking-widest text-ink/30 ml-1">Tarif Journalier (DA)</label>
+                      <div className="relative">
+                        <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 text-ink/20" size={18} />
+                        <input
+                          type="number"
+                          value={formData.dailyRate}
+                          onChange={e => setFormData({ ...formData, dailyRate: e.target.value })}
+                          className="w-full input-premium pl-12"
+                          placeholder="Ex: 2000"
+                        />
+                      </div>
+                    </div>
+                  )}
+                  {formData.paymentType === 'percentage' && (
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-bold uppercase tracking-widest text-ink/30 ml-1">Pourcentage de commission (%)</label>
+                      <div className="relative">
+                        <Briefcase className="absolute left-4 top-1/2 -translate-y-1/2 text-ink/20" size={18} />
+                        <input
+                          type="number"
+                          min="0"
+                          max="100"
+                          value={formData.percentage}
+                          onChange={e => setFormData({ ...formData, percentage: e.target.value })}
+                          className="w-full input-premium pl-12"
+                          placeholder="Ex: 30"
+                        />
+                      </div>
+                      <p className="text-[10px] text-ink/40 ml-1">L'employé gagne ce pourcentage de chaque prestation qu'il finalise.</p>
                     </div>
                   )}
 
@@ -2257,15 +2577,80 @@ const Employees: React.FC = () => {
                       </div>
                     </div>
                   </div>
+
+                  {/* Permissions editor — workers only (admins have full access) */}
+                  {formData.role === 'worker' && (
+                    <div className="md:col-span-2 pt-4 border-t border-border">
+                      <div className="flex items-center gap-2 mb-2">
+                        <ShieldCheck size={18} className="text-accent" />
+                        <h4 className="text-sm font-bold text-ink/60">Permissions & accès</h4>
+                      </div>
+                      <p className="text-[11px] text-ink/40 mb-4">
+                        Choisissez les interfaces et les actions autorisées pour cet employé. Sans accès, l'interface reste masquée.
+                      </p>
+                      <div className="space-y-3">
+                        {PERMISSION_CATALOG.map(iface => {
+                          const acts = formData.permissions[iface.id] || [];
+                          const canView = acts.includes('view');
+                          return (
+                            <div
+                              key={iface.id}
+                              className={cn(
+                                'rounded-2xl border p-4 transition-colors',
+                                canView ? 'border-accent/30 bg-accent/5' : 'border-border bg-primary-bg/40',
+                              )}
+                            >
+                              <label className="flex items-center gap-3 cursor-pointer">
+                                <input
+                                  type="checkbox"
+                                  checked={canView}
+                                  onChange={() => togglePermission(iface.id, 'view')}
+                                  className="w-4 h-4 accent-accent rounded"
+                                />
+                                <span className="text-sm font-bold text-ink">{iface.label}</span>
+                              </label>
+                              {canView && iface.actions.length > 1 && (
+                                <div className="flex flex-wrap gap-2 mt-3 ml-7">
+                                  {iface.actions.filter(a => a.id !== 'view').map(a => {
+                                    const active = acts.includes(a.id);
+                                    return (
+                                      <button
+                                        key={a.id}
+                                        type="button"
+                                        onClick={() => togglePermission(iface.id, a.id)}
+                                        className={cn(
+                                          'px-3 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wider border transition-all',
+                                          active
+                                            ? 'bg-accent text-white border-accent'
+                                            : 'bg-white text-ink/50 border-border hover:border-accent/40',
+                                        )}
+                                      >
+                                        {a.label}
+                                      </button>
+                                    );
+                                  })}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex gap-4 pt-4">
-                  <button onClick={() => setIsModalOpen(false)} className="flex-1 py-4 rounded-2xl bg-white border border-border font-bold text-ink/40 hover:text-ink transition-all">Annuler</button>
+                  <button onClick={() => setIsModalOpen(false)} disabled={isSaving} className="flex-1 py-4 rounded-2xl bg-white border border-border font-bold text-ink/40 hover:text-ink transition-all disabled:opacity-50">Annuler</button>
                   <button
                     onClick={handleSaveEmployee}
-                    className="flex-1 btn-gradient shimmer py-4 rounded-2xl font-bold flex items-center justify-center gap-2"
+                    disabled={isSaving}
+                    className="flex-1 btn-gradient shimmer py-4 rounded-2xl font-bold flex items-center justify-center gap-2 disabled:opacity-50"
                   >
-                    <Check size={20} /> Enregistrer
+                    {isSaving ? (
+                      <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> Enregistrement...</>
+                    ) : (
+                      <><Check size={20} /> Enregistrer</>
+                    )}
                   </button>
                 </div>
               </div>

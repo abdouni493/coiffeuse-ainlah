@@ -375,6 +375,10 @@ create index if not exists idx_reservations_worker       on public.reservations(
 create index if not exists idx_reservations_client       on public.reservations(client_id);
 create index if not exists idx_res_workers_worker        on public.reservation_workers(worker_id);
 create index if not exists idx_res_workers_res           on public.reservation_workers(reservation_id);
+-- One row per (reservation, worker): required so the app can UPSERT a worker's
+-- earnings on finalization with ON CONFLICT (reservation_id, worker_id).
+create unique index if not exists uidx_res_workers_res_worker
+  on public.reservation_workers(reservation_id, worker_id);
 create index if not exists idx_res_products_res          on public.reservation_products(reservation_id);
 create index if not exists idx_emp_payments_emp          on public.employee_payments(employee_id);
 create index if not exists idx_emp_payments_date         on public.employee_payments(date);

@@ -6,7 +6,8 @@ import {
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { formatCurrency, cn } from '../lib/utils';
-import { StoreConfig } from '../types';
+import { StoreConfig, User } from '../types';
+import { hasPermission } from '../lib/permissions';
 
 interface ClientRow {
   id: string;
@@ -59,9 +60,12 @@ const isVisit = (r: ResRow) => r.status === 'finalized' || r.status === 'complet
 
 interface ClientsProps {
   config: StoreConfig;
+  user?: User;
 }
 
-const Clients: React.FC<ClientsProps> = ({ config }) => {
+const Clients: React.FC<ClientsProps> = ({ config, user }) => {
+  // Per-worker action gating (admins pass all checks).
+  const can = (action: string) => hasPermission(user, 'clients', action);
   const [clients, setClients] = useState<ClientRow[]>([]);
   const [reservations, setReservations] = useState<ResRow[]>([]);
   const [prestations, setPrestations] = useState<Record<string, string>>({});
@@ -202,9 +206,11 @@ const Clients: React.FC<ClientsProps> = ({ config }) => {
             className="flex items-center gap-2 px-4 py-3 rounded-2xl bg-white/60 border border-border text-ink/70 hover:text-accent hover:border-accent/30 transition-all">
             <Settings2 size={18} /> <span className="hidden sm:inline font-medium text-sm">Fidélité</span>
           </button>
-          <button onClick={openCreate} className="btn-gradient shimmer flex items-center gap-2.5 px-6 py-3">
-            <Plus size={20} /> Nouveau Client
-          </button>
+          {can('create') && (
+            <button onClick={openCreate} className="btn-gradient shimmer flex items-center gap-2.5 px-6 py-3">
+              <Plus size={20} /> Nouveau Client
+            </button>
+          )}
         </div>
       </div>
 
@@ -227,9 +233,11 @@ const Clients: React.FC<ClientsProps> = ({ config }) => {
         <div className="card-premium p-16 text-center">
           <Users className="mx-auto text-accent/40 mb-4" size={48} />
           <p className="text-ink/50 font-medium">Aucun client pour le moment.</p>
-          <button onClick={openCreate} className="btn-gradient mt-6 inline-flex items-center gap-2 px-6 py-3">
-            <Plus size={18} /> Ajouter un client
-          </button>
+          {can('create') && (
+            <button onClick={openCreate} className="btn-gradient mt-6 inline-flex items-center gap-2 px-6 py-3">
+              <Plus size={18} /> Ajouter un client
+            </button>
+          )}
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -299,14 +307,18 @@ const Clients: React.FC<ClientsProps> = ({ config }) => {
                       className="p-2.5 rounded-xl bg-amber-50 text-amber-500 hover:bg-amber-400 hover:text-white transition-all">
                       <Award size={16} />
                     </button>
-                    <button onClick={() => openEdit(c)} title="Modifier"
-                      className="p-2.5 rounded-xl bg-white/70 text-ink/50 hover:bg-ink hover:text-white transition-all">
-                      <Pencil size={16} />
-                    </button>
-                    <button onClick={() => setConfirmDelete(c)} title="Supprimer"
-                      className="p-2.5 rounded-xl bg-white/70 text-ink/50 hover:bg-red-500 hover:text-white transition-all">
-                      <Trash2 size={16} />
-                    </button>
+                    {can('edit') && (
+                      <button onClick={() => openEdit(c)} title="Modifier"
+                        className="p-2.5 rounded-xl bg-white/70 text-ink/50 hover:bg-ink hover:text-white transition-all">
+                        <Pencil size={16} />
+                      </button>
+                    )}
+                    {can('delete') && (
+                      <button onClick={() => setConfirmDelete(c)} title="Supprimer"
+                        className="p-2.5 rounded-xl bg-white/70 text-ink/50 hover:bg-red-500 hover:text-white transition-all">
+                        <Trash2 size={16} />
+                      </button>
+                    )}
                   </div>
                 </motion.div>
               );

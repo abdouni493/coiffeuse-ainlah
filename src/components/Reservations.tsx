@@ -33,6 +33,7 @@ import { fr } from 'date-fns/locale';
 import { Reservation, Prestation, Service, User as Employee, StoreConfig } from '../types';
 import { cn, formatCurrency } from '../lib/utils';
 import { supabase } from '../lib/supabase';
+import { hasPermission } from '../lib/permissions';
 
 // Global styles for invoice logo
 const logoStyles = `
@@ -294,6 +295,8 @@ const ClientPicker: React.FC<ClientPickerProps> = ({
 };
 
 const Reservations: React.FC<ReservationsProps> = ({ user: currentUser, config }) => {
+  // Per-worker action gating on the reservations interface (admins always pass).
+  const can = (action: string) => hasPermission(currentUser, 'reservations', action);
   const [view, setView] = useState<'list' | 'create' | 'calendar' | 'walkin'>('list');
   const [walkStep, setWalkStep] = useState(1);
   const [isSavingWalkIn, setIsSavingWalkIn] = useState(false);
@@ -948,7 +951,7 @@ const Reservations: React.FC<ReservationsProps> = ({ user: currentUser, config }
             {view === 'calendar' ? <Eye size={18} /> : <CalendarIcon size={18} />}
             {view === 'calendar' ? 'Vue Liste' : 'Vue Calendrier'}
           </button>
-          {view !== 'create' && view !== 'walkin' && (
+          {view !== 'create' && view !== 'walkin' && can('create') && (
             <button
               onClick={openWalkIn}
               className="flex items-center gap-2.5 px-6 py-2.5 rounded-2xl bg-emerald-500 text-white font-bold shadow-lg shadow-emerald-500/20 hover:bg-emerald-600 transition-all duration-300"
@@ -957,7 +960,7 @@ const Reservations: React.FC<ReservationsProps> = ({ user: currentUser, config }
               Réservation Sur Place
             </button>
           )}
-          {view !== 'create' && view !== 'walkin' && (
+          {view !== 'create' && view !== 'walkin' && can('create') && (
             <button
               onClick={() => setView('create')}
               className="btn-gradient shimmer flex items-center gap-2.5 px-6 py-2.5"
@@ -1211,12 +1214,14 @@ const Reservations: React.FC<ReservationsProps> = ({ user: currentUser, config }
                         {/* Primary contextual action + pay debt */}
                         <div className="flex items-center gap-2">
                           {res.status === 'pending' ? (
-                            <button
-                              onClick={() => handleFinalize(res)}
-                              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-gradient-to-r from-accent to-accent-light text-white font-bold text-sm shadow-lg shadow-accent/25 hover:shadow-accent/40 hover:-translate-y-0.5 transition-all duration-300"
-                            >
-                              <Check size={17} /> Finaliser
-                            </button>
+                            can('finalize') && (
+                              <button
+                                onClick={() => handleFinalize(res)}
+                                className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-gradient-to-r from-accent to-accent-light text-white font-bold text-sm shadow-lg shadow-accent/25 hover:shadow-accent/40 hover:-translate-y-0.5 transition-all duration-300"
+                              >
+                                <Check size={17} /> Finaliser
+                              </button>
+                            )
                           ) : (
                             <button
                               onClick={() => { setSelectedReservation(res); setModal('print'); }}
@@ -1243,18 +1248,22 @@ const Reservations: React.FC<ReservationsProps> = ({ user: currentUser, config }
                           >
                             <Eye size={15} /> Détails
                           </button>
-                          <button
-                            onClick={() => handleEdit(res)}
-                            className="flex items-center justify-center gap-1.5 py-2 rounded-xl bg-blue-50 text-blue-500 font-semibold text-xs hover:bg-blue-500 hover:text-white transition-all duration-300"
-                          >
-                            <Edit2 size={15} /> Modifier
-                          </button>
-                          <button
-                            onClick={() => { setSelectedReservation(res); setModal('delete'); }}
-                            className="flex items-center justify-center gap-1.5 py-2 rounded-xl bg-red-50 text-red-500 font-semibold text-xs hover:bg-red-500 hover:text-white transition-all duration-300"
-                          >
-                            <Trash2 size={15} /> Suppr.
-                          </button>
+                          {can('edit') && (
+                            <button
+                              onClick={() => handleEdit(res)}
+                              className="flex items-center justify-center gap-1.5 py-2 rounded-xl bg-blue-50 text-blue-500 font-semibold text-xs hover:bg-blue-500 hover:text-white transition-all duration-300"
+                            >
+                              <Edit2 size={15} /> Modifier
+                            </button>
+                          )}
+                          {can('delete') && (
+                            <button
+                              onClick={() => { setSelectedReservation(res); setModal('delete'); }}
+                              className="flex items-center justify-center gap-1.5 py-2 rounded-xl bg-red-50 text-red-500 font-semibold text-xs hover:bg-red-500 hover:text-white transition-all duration-300"
+                            >
+                              <Trash2 size={15} /> Suppr.
+                            </button>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -2677,7 +2686,8 @@ const Reservations: React.FC<ReservationsProps> = ({ user: currentUser, config }
                         transition={{ delay: 0.3 }}
                         className="flex flex-wrap gap-3"
                       >
-                        <motion.button 
+                        {can('edit') && (
+                        <motion.button
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
                           onClick={() => handleEdit(selectedReservation)}
@@ -2690,6 +2700,7 @@ const Reservations: React.FC<ReservationsProps> = ({ user: currentUser, config }
                         >
                           <Edit2 size={18} /> Modifier
                         </motion.button>
+                        )}
                         <motion.button 
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
@@ -2716,7 +2727,8 @@ const Reservations: React.FC<ReservationsProps> = ({ user: currentUser, config }
                             <CreditCard size={18} /> Payer
                           </motion.button>
                         )}
-                        <motion.button 
+                        {can('delete') && (
+                        <motion.button
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
                           onClick={() => setModal('delete')}
@@ -2724,6 +2736,7 @@ const Reservations: React.FC<ReservationsProps> = ({ user: currentUser, config }
                         >
                           <Trash2 size={18} /> Supprimer
                         </motion.button>
+                        )}
                         <motion.button 
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}

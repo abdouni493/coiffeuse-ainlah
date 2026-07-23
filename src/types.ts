@@ -17,6 +17,8 @@ export interface User {
   monthlyRate?: number;
   hireDate?: string;
   createdAt?: string;
+  /** Per-worker interface/action permissions, e.g. { reservations: ['view','create'] } */
+  permissions?: Record<string, string[]>;
 }
 
 export interface Prestation {

@@ -51,8 +51,8 @@ const MENU: MenuSection[] = [
   {
     section: 'Principal',
     items: [
-      { id: 'dashboard',    label: 'Tableau de bord', icon: LayoutDashboard, roles: ['admin', 'worker', 'super_admin'], always: true },
-      { id: 'reservations', label: 'Réservations',     icon: CalendarHeart,  roles: ['admin', 'worker', 'super_admin'], always: true },
+      { id: 'dashboard',    label: 'Tableau de bord', icon: LayoutDashboard, roles: ['admin', 'worker', 'super_admin'] },
+      { id: 'reservations', label: 'Réservations',     icon: CalendarHeart,  roles: ['admin', 'worker', 'super_admin'] },
       { id: 'clients',      label: 'Clients',          icon: Users,          roles: ['admin', 'worker', 'super_admin'] },
       { id: 'my-payments',  label: 'Mes Paiements',    icon: Wallet,         roles: ['worker'], always: true },
     ],
@@ -101,13 +101,15 @@ const Sidebar: React.FC<SidebarProps> = ({
   permissions,
 }) => {
   const canSee = (item: MenuItem): boolean => {
-    if (!item.roles.includes(role)) return false;
-    // Worker permission gate (only when a permission map is supplied).
-    if (role === 'worker' && permissions && !item.always) {
-      const acts = permissions[item.id];
-      return Array.isArray(acts) && acts.length > 0;
+    // Admins / super-admins: driven purely by the item's role list.
+    if (role === 'admin' || role === 'super_admin') {
+      return item.roles.includes(role);
     }
-    return true;
+    // Workers: always-on items are visible; everything else is gated by the
+    // per-worker permission map (needs the "view" action on that interface).
+    if (item.always) return true;
+    const acts = permissions?.[item.id];
+    return Array.isArray(acts) && acts.includes('view');
   };
 
   const sections = MENU

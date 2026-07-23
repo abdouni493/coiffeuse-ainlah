@@ -22,7 +22,7 @@ export async function fetchUserProfile(userId: string) {
     
     const { data, error } = await supabase
       .from('profiles')
-      .select('id, username, full_name, role, avatar_url, phone, address, payment_type, percentage, daily_rate, monthly_rate, created_at')
+      .select('id, username, full_name, role, avatar_url, phone, address, payment_type, percentage, daily_rate, monthly_rate, permissions, created_at')
       .eq('id', userId)
       .single();
 
