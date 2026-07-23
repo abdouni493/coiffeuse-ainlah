@@ -531,7 +531,8 @@ const Reservations: React.FC<ReservationsProps> = ({ user: currentUser, config }
   const resolveClientId = async (): Promise<string | null> => {
     if (selectedClientId) return selectedClientId;
     const name = clientInfo.name.trim();
-    if (!name) return null;
+    // Anonymous walk-ins keep no client record.
+    if (!name || name.toLowerCase() === 'client passager') return null;
     const phone = clientInfo.phone.trim();
     const existing = clients.find(
       c => c.name.trim().toLowerCase() === name.toLowerCase() && (c.phone || '').trim() === phone
@@ -1108,156 +1109,155 @@ const Reservations: React.FC<ReservationsProps> = ({ user: currentUser, config }
                 })
                 .map((res, idx) => {
                   const rest = res.totalPrice - res.paidAmount;
+                  const isPaid = rest <= 0;
                   const prestationName = prestations.find(p => p.id === res.prestationId)?.name;
                   return (
-                <motion.div
-                  key={res.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: Math.min(idx * 0.05, 0.4) }}
-                  className="group relative rounded-premium bg-white/80 backdrop-blur-xl border border-white/60 shadow-premium overflow-hidden flex flex-col hover:-translate-y-1.5 hover:shadow-2xl transition-all duration-300"
-                >
-                  {/* Colored top accent by type */}
-                  <div className={cn(
-                    "h-1.5 w-full bg-gradient-to-r",
-                    res.isWalkIn ? "from-emerald-400 to-emerald-500" : "from-accent to-accent-light"
-                  )} />
+                  <motion.div
+                    key={res.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: Math.min(idx * 0.06, 0.4) }}
+                    className="group relative rounded-premium bg-white/80 backdrop-blur-xl border border-white/60 shadow-premium overflow-hidden flex flex-col hover:-translate-y-1.5 hover:shadow-2xl transition-all duration-300"
+                  >
+                    {/* Type accent strip */}
+                    <div className={cn(
+                      "h-1.5 w-full shrink-0",
+                      res.isWalkIn ? "bg-gradient-to-r from-emerald-400 to-emerald-500" : "bg-gradient-to-r from-accent to-accent-light"
+                    )} />
 
-                  <div className="p-6 flex flex-col flex-1">
-                    {/* Header */}
-                    <div className="flex items-start justify-between gap-3 mb-4">
-                      <div className="flex items-center gap-3.5 min-w-0">
-                        <div className={cn(
-                          "w-12 h-12 rounded-2xl flex items-center justify-center text-white font-serif font-bold text-xl shrink-0 shadow-lg bg-gradient-to-br",
-                          res.isWalkIn ? "from-emerald-400 to-emerald-500 shadow-emerald-500/25" : "from-accent to-accent-light shadow-accent/25"
+                    <div className="p-6 flex flex-col flex-1">
+                      {/* Header */}
+                      <div className="flex items-start justify-between gap-3 mb-4">
+                        <div className="flex items-center gap-3.5 min-w-0">
+                          <div className={cn(
+                            "w-12 h-12 rounded-2xl flex items-center justify-center text-white font-serif font-bold text-xl shrink-0 shadow-md bg-gradient-to-br",
+                            res.isWalkIn ? "from-emerald-400 to-emerald-500 shadow-emerald-500/20" : "from-accent to-accent-light shadow-accent/20"
+                          )}>
+                            {res.clientName.charAt(0).toUpperCase()}
+                          </div>
+                          <div className="min-w-0">
+                            <h4 className="font-serif font-bold text-lg text-ink tracking-tight truncate">{res.clientName}</h4>
+                            {res.clientPhone
+                              ? <p className="text-xs font-semibold text-ink/40 flex items-center gap-1.5 mt-0.5"><Phone size={11} /> {res.clientPhone}</p>
+                              : <p className="text-[11px] font-medium text-ink/30 italic mt-0.5">Client passager</p>}
+                          </div>
+                        </div>
+                        <span className={cn(
+                          "px-2.5 py-1 rounded-full text-[9px] font-bold uppercase tracking-[0.12em] flex items-center gap-1 shrink-0 border",
+                          res.isWalkIn ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-accent/10 text-accent border-accent/15"
                         )}>
-                          {res.clientName.charAt(0).toUpperCase()}
+                          {res.isWalkIn ? <><Zap size={10} /> Sur Place</> : <><CalendarIcon size={10} /> RDV</>}
+                        </span>
+                      </div>
+
+                      {/* Status + payment chips */}
+                      <div className="flex flex-wrap gap-2 mb-5">
+                        <span className={cn(
+                          "px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-widest flex items-center gap-1.5",
+                          res.status === 'pending' ? "bg-amber-50 text-amber-600" : "bg-emerald-50 text-emerald-600"
+                        )}>
+                          <span className={cn("w-1.5 h-1.5 rounded-full", res.status === 'pending' ? "bg-amber-500" : "bg-emerald-500")} />
+                          {res.status === 'pending' ? 'En attente' : 'Finalisé'}
+                        </span>
+                        <span className={cn(
+                          "px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-widest",
+                          isPaid ? "bg-green-50 text-green-600" : "bg-red-50 text-red-600"
+                        )}>
+                          {isPaid ? '✓ Payé' : `Dette ${formatCurrency(rest)}`}
+                        </span>
+                      </div>
+
+                      {/* Info rows */}
+                      <div className="grid grid-cols-2 gap-2.5 mb-2.5">
+                        <div className="flex items-center gap-2.5 p-3 rounded-xl bg-primary-bg/40 border border-border/40">
+                          <CalendarIcon size={15} className="text-ink/30" />
+                          <div className="min-w-0">
+                            <p className="text-[9px] uppercase font-bold text-ink/30 tracking-wider">Date</p>
+                            <p className="text-xs font-bold text-ink/70 truncate">{format(new Date(res.date), 'dd MMM yyyy', { locale: fr })}</p>
+                          </div>
                         </div>
+                        <div className="flex items-center gap-2.5 p-3 rounded-xl bg-primary-bg/40 border border-border/40">
+                          <Clock size={15} className="text-ink/30" />
+                          <div className="min-w-0">
+                            <p className="text-[9px] uppercase font-bold text-ink/30 tracking-wider">Heure</p>
+                            <p className="text-xs font-bold text-ink/70">{res.time}</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2.5 p-3 rounded-xl bg-accent/5 border border-accent/10 mb-5">
+                        <Scissors size={16} className="text-accent shrink-0" />
                         <div className="min-w-0">
-                          <h4 className="font-serif font-bold text-lg text-ink tracking-tight truncate">{res.clientName}</h4>
-                          {res.clientPhone
-                            ? <p className="text-xs font-semibold text-ink/40 flex items-center gap-1.5 mt-0.5"><Phone size={11} /> {res.clientPhone}</p>
-                            : <p className="text-[11px] font-medium text-ink/30 italic mt-0.5">Client passager</p>}
-                        </div>
-                      </div>
-                      <span className={cn(
-                        "px-2.5 py-1 rounded-full text-[9px] font-bold uppercase tracking-[0.12em] shrink-0 flex items-center gap-1 border",
-                        res.isWalkIn ? "bg-emerald-500 text-white border-emerald-500" : "bg-accent/10 text-accent border-accent/20"
-                      )}>
-                        {res.isWalkIn ? <><Zap size={10} /> Sur Place</> : <><CalendarIcon size={10} /> RDV</>}
-                      </span>
-                    </div>
-
-                    {/* Status + payment chips */}
-                    <div className="flex flex-wrap gap-2 mb-5">
-                      <span className={cn(
-                        "px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-[0.12em] flex items-center gap-1.5",
-                        res.status === 'pending' ? "bg-amber-50 text-amber-600" : "bg-emerald-50 text-emerald-600"
-                      )}>
-                        <span className={cn("w-1.5 h-1.5 rounded-full", res.status === 'pending' ? "bg-amber-500" : "bg-emerald-500")} />
-                        {res.status === 'pending' ? 'En attente' : 'Finalisé'}
-                      </span>
-                      <span className={cn(
-                        "px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-[0.12em] flex items-center gap-1.5",
-                        rest > 0 ? "bg-red-50 text-red-600" : "bg-green-50 text-green-600"
-                      )}>
-                        {rest > 0 ? <AlertCircle size={11} /> : <Check size={11} />}
-                        {rest > 0 ? `Dette ${formatCurrency(rest)}` : 'Payé'}
-                      </span>
-                    </div>
-
-                    {/* Info rows */}
-                    <div className="grid grid-cols-2 gap-2.5 mb-3">
-                      <div className="flex items-center gap-2.5 p-3 rounded-2xl bg-primary-bg/50 border border-border/50">
-                        <CalendarIcon size={15} className="text-accent/60 shrink-0" />
-                        <div className="min-w-0">
-                          <p className="text-[9px] uppercase font-bold text-ink/30 tracking-wider">Date</p>
-                          <p className="text-xs font-bold text-ink/70 truncate">{format(new Date(res.date), 'dd MMM yyyy', { locale: fr })}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2.5 p-3 rounded-2xl bg-primary-bg/50 border border-border/50">
-                        <Clock size={15} className="text-accent/60 shrink-0" />
-                        <div className="min-w-0">
-                          <p className="text-[9px] uppercase font-bold text-ink/30 tracking-wider">Heure</p>
-                          <p className="text-xs font-bold text-ink/70">{res.time}</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2.5 p-3 rounded-2xl bg-accent/5 border border-accent/10 mb-5">
-                      <Scissors size={16} className="text-accent shrink-0" />
-                      <div className="min-w-0">
-                        <p className="text-[9px] uppercase font-bold text-accent/70 tracking-widest">Prestation</p>
-                        <p className="text-sm font-bold text-ink truncate">{prestationName || '—'}</p>
-                      </div>
-                    </div>
-
-                    {/* Totals + Actions */}
-                    <div className="mt-auto pt-5 border-t border-border/60 flex flex-col gap-3">
-                      <div className="flex items-end justify-between">
-                        <div>
-                          <p className="text-[10px] uppercase font-bold text-ink/30 tracking-widest mb-0.5">Total</p>
-                          <p className="font-serif font-bold text-2xl text-ink leading-none">{formatCurrency(res.totalPrice)}</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-[10px] uppercase font-bold text-ink/30 tracking-widest mb-0.5">{rest > 0 ? 'Reste' : 'Payé'}</p>
-                          <p className={cn("font-bold text-base leading-none", rest > 0 ? "text-red-500" : "text-emerald-600")}>
-                            {formatCurrency(rest > 0 ? rest : res.paidAmount)}
-                          </p>
+                          <p className="text-[9px] uppercase font-bold text-accent/70 tracking-widest">Prestation</p>
+                          <p className="text-sm font-bold text-ink truncate">{prestationName || '—'}</p>
                         </div>
                       </div>
 
-                      {/* Primary contextual action + pay debt */}
-                      <div className="flex items-center gap-2">
-                        {res.status === 'pending' ? (
+                      {/* Totals + actions */}
+                      <div className="mt-auto pt-5 border-t border-border/60 flex flex-col gap-3">
+                        <div className="flex items-end justify-between">
+                          <div>
+                            <p className="text-[9px] uppercase font-bold text-ink/30 tracking-widest mb-0.5">Total</p>
+                            <p className="font-serif font-bold text-2xl text-ink leading-none">{formatCurrency(res.totalPrice)}</p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-[9px] uppercase font-bold text-ink/30 tracking-widest mb-0.5">{isPaid ? 'Payé' : 'Reste'}</p>
+                            <p className={cn("font-bold text-base leading-none", isPaid ? "text-emerald-600" : "text-red-500")}>
+                              {formatCurrency(isPaid ? res.paidAmount : rest)}
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Primary contextual action + pay debt */}
+                        <div className="flex items-center gap-2">
+                          {res.status === 'pending' ? (
+                            <button
+                              onClick={() => handleFinalize(res)}
+                              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-gradient-to-r from-accent to-accent-light text-white font-bold text-sm shadow-lg shadow-accent/25 hover:shadow-accent/40 hover:-translate-y-0.5 transition-all duration-300"
+                            >
+                              <Check size={17} /> Finaliser
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => { setSelectedReservation(res); setModal('print'); }}
+                              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-emerald-500 text-white font-bold text-sm shadow-lg shadow-emerald-500/25 hover:bg-emerald-600 hover:-translate-y-0.5 transition-all duration-300"
+                            >
+                              <Printer size={17} /> Imprimer
+                            </button>
+                          )}
+                          {rest > 0 && (
+                            <button
+                              onClick={() => { setSelectedReservation(res); setCurrentPayment(0); setModal('payDebt'); }}
+                              className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-amber-100 text-amber-600 font-bold text-sm hover:bg-amber-500 hover:text-white transition-all duration-300"
+                            >
+                              <CreditCard size={17} /> Payer
+                            </button>
+                          )}
+                        </div>
+
+                        {/* Secondary actions */}
+                        <div className="grid grid-cols-3 gap-2">
                           <button
-                            onClick={() => handleFinalize(res)}
-                            className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-gradient-to-r from-accent to-accent-light text-white font-bold text-sm shadow-lg shadow-accent/25 hover:shadow-accent/40 hover:-translate-y-0.5 transition-all duration-300"
+                            onClick={() => { setSelectedReservation(res); setModal('details'); }}
+                            className="flex items-center justify-center gap-1.5 py-2 rounded-xl bg-ink/[0.04] text-ink/50 font-semibold text-xs hover:bg-ink hover:text-white transition-all duration-300"
                           >
-                            <Check size={17} /> Finaliser
+                            <Eye size={15} /> Détails
                           </button>
-                        ) : (
                           <button
-                            onClick={() => { setSelectedReservation(res); setModal('print'); }}
-                            className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-emerald-500 text-white font-bold text-sm shadow-lg shadow-emerald-500/25 hover:bg-emerald-600 hover:-translate-y-0.5 transition-all duration-300"
+                            onClick={() => handleEdit(res)}
+                            className="flex items-center justify-center gap-1.5 py-2 rounded-xl bg-blue-50 text-blue-500 font-semibold text-xs hover:bg-blue-500 hover:text-white transition-all duration-300"
                           >
-                            <Printer size={17} /> Imprimer
+                            <Edit2 size={15} /> Modifier
                           </button>
-                        )}
-                        {rest > 0 && (
                           <button
-                            onClick={() => { setSelectedReservation(res); setCurrentPayment(0); setModal('payDebt'); }}
-                            className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-amber-100 text-amber-600 font-bold text-sm hover:bg-amber-500 hover:text-white transition-all duration-300"
+                            onClick={() => { setSelectedReservation(res); setModal('delete'); }}
+                            className="flex items-center justify-center gap-1.5 py-2 rounded-xl bg-red-50 text-red-500 font-semibold text-xs hover:bg-red-500 hover:text-white transition-all duration-300"
                           >
-                            <CreditCard size={17} /> Payer
+                            <Trash2 size={15} /> Suppr.
                           </button>
-                        )}
-                      </div>
-
-                      {/* Secondary actions */}
-                      <div className="grid grid-cols-3 gap-2">
-                        <button
-                          onClick={() => { setSelectedReservation(res); setModal('details'); }}
-                          className="flex items-center justify-center gap-1.5 py-2 rounded-xl bg-ink/5 text-ink/50 font-bold text-xs hover:bg-ink hover:text-white transition-all duration-300"
-                        >
-                          <Eye size={15} /> Détails
-                        </button>
-                        <button
-                          onClick={() => handleEdit(res)}
-                          className="flex items-center justify-center gap-1.5 py-2 rounded-xl bg-blue-50 text-blue-500 font-bold text-xs hover:bg-blue-500 hover:text-white transition-all duration-300"
-                        >
-                          <Edit2 size={15} /> Modifier
-                        </button>
-                        <button
-                          onClick={() => { setSelectedReservation(res); setModal('delete'); }}
-                          className="flex items-center justify-center gap-1.5 py-2 rounded-xl bg-red-50 text-red-500 font-bold text-xs hover:bg-red-500 hover:text-white transition-all duration-300"
-                        >
-                          <Trash2 size={15} /> Suppr.
-                        </button>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </motion.div>
+                  </motion.div>
                   );
                 })}
             </div>
