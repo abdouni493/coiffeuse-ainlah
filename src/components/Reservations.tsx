@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   Plus,
@@ -24,7 +24,9 @@ import {
   Trash,
   Package,
   Zap,
-  UserPlus
+  UserPlus,
+  UserCheck,
+  Users
 } from 'lucide-react';
 import { format, addDays, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, addMonths, subMonths, startOfWeek, endOfWeek, isSameMonth } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -72,6 +74,224 @@ interface ReservationsProps {
   config: StoreConfig;
 }
 
+// A lightweight client record used by the reservation client picker.
+type PickerClient = { id: string; name: string; phone?: string | null };
+
+// Colour presets so the picker matches the surrounding step (rose "accent" for
+// scheduled reservations, "emerald" for walk-ins).
+// NOTE: every class is a complete static string (no runtime interpolation) so
+// Tailwind's JIT can detect and generate them.
+const PICKER_THEMES = {
+  accent: {
+    bg: 'bg-accent', bgSoft: 'bg-accent/10', softText: 'text-accent',
+    border: 'border-accent', hoverBorder: 'hover:border-accent/40', ring: 'focus:border-accent/40',
+    grad: 'from-accent to-accent-light', tabActive: 'bg-accent text-white shadow-lg shadow-accent/20',
+    focusText: 'group-focus-within:text-accent', hoverBg: 'group-hover:bg-accent',
+  },
+  emerald: {
+    bg: 'bg-emerald-500', bgSoft: 'bg-emerald-500/10', softText: 'text-emerald-600',
+    border: 'border-emerald-500', hoverBorder: 'hover:border-emerald-400/40', ring: 'focus:border-emerald-400/50',
+    grad: 'from-emerald-500 to-emerald-600', tabActive: 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20',
+    focusText: 'group-focus-within:text-emerald-500', hoverBg: 'group-hover:bg-emerald-500',
+  },
+} as const;
+
+interface ClientPickerProps {
+  theme?: keyof typeof PICKER_THEMES;
+  clients: PickerClient[];
+  name: string;
+  phone: string;
+  selectedId: string | null;
+  onSelect: (client: PickerClient) => void;
+  onClear: () => void;
+  onCreate: (name: string, phone: string) => Promise<PickerClient | null>;
+}
+
+// Reusable client step used by both reservation flows. It lets the operator
+// search an existing client (by name or phone) and pick it, OR create a brand
+// new client that is persisted to the database right away.
+const ClientPicker: React.FC<ClientPickerProps> = ({
+  theme = 'accent', clients, name, phone, selectedId, onSelect, onClear, onCreate,
+}) => {
+  const t = PICKER_THEMES[theme];
+  const [tab, setTab] = useState<'search' | 'create'>('search');
+  const [query, setQuery] = useState('');
+  const [newName, setNewName] = useState('');
+  const [newPhone, setNewPhone] = useState('');
+  const [busy, setBusy] = useState(false);
+
+  const hasClient = !!name.trim();
+
+  const norm = (v: string) => v.replace(/\s+/g, '').toLowerCase();
+  const results = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return clients.slice(0, 6);
+    const qn = norm(query);
+    return clients
+      .filter(c => c.name.toLowerCase().includes(q) || norm(c.phone || '').includes(qn))
+      .slice(0, 8);
+  }, [query, clients]);
+
+  const handleCreate = async () => {
+    if (!newName.trim() || busy) return;
+    setBusy(true);
+    const created = await onCreate(newName, newPhone);
+    setBusy(false);
+    if (created) {
+      onSelect(created);
+      setNewName(''); setNewPhone(''); setQuery(''); setTab('search');
+    }
+  };
+
+  // ── Selected client summary ──────────────────────────────────────────────
+  if (hasClient) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }}
+        className={cn('p-5 sm:p-6 rounded-[28px] bg-white border-2 shadow-sm flex items-center gap-4', t.border)}
+      >
+        <div className={cn('w-14 h-14 rounded-2xl flex items-center justify-center text-white font-serif font-bold text-2xl shrink-0 bg-gradient-to-br', t.grad)}>
+          {name.trim().charAt(0).toUpperCase()}
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <h4 className="font-serif font-bold text-xl text-ink tracking-tight truncate">{name}</h4>
+            {selectedId ? (
+              <span className={cn('px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-widest flex items-center gap-1', t.bgSoft, t.softText)}>
+                <UserCheck size={11} /> Fiche
+              </span>
+            ) : (
+              <span className="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-widest bg-ink/5 text-ink/40">Nouveau</span>
+            )}
+          </div>
+          {phone.trim()
+            ? <p className="text-sm font-semibold text-ink/50 flex items-center gap-1.5 mt-0.5"><Phone size={13} /> {phone}</p>
+            : <p className="text-xs font-medium text-ink/30 italic mt-0.5">Aucun téléphone</p>}
+        </div>
+        <button
+          onClick={onClear}
+          className="px-4 py-2.5 rounded-xl bg-ink/5 text-ink/50 font-bold text-xs uppercase tracking-widest hover:bg-ink hover:text-white transition-all duration-300 flex items-center gap-1.5 shrink-0"
+        >
+          <X size={14} /> Changer
+        </button>
+      </motion.div>
+    );
+  }
+
+  // ── Search / Create tabs ─────────────────────────────────────────────────
+  return (
+    <div className="space-y-5">
+      <div className="flex p-1.5 rounded-2xl bg-primary-bg/60 border border-border">
+        <button
+          onClick={() => setTab('search')}
+          className={cn('flex-1 py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all duration-300',
+            tab === 'search' ? t.tabActive : 'text-ink/40 hover:text-ink')}
+        >
+          <Search size={16} /> Client existant
+        </button>
+        <button
+          onClick={() => setTab('create')}
+          className={cn('flex-1 py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all duration-300',
+            tab === 'create' ? t.tabActive : 'text-ink/40 hover:text-ink')}
+        >
+          <UserPlus size={16} /> Nouveau client
+        </button>
+      </div>
+
+      {tab === 'search' ? (
+        <div className="space-y-4">
+          <div className="relative group">
+            <Search className={cn('absolute left-5 top-1/2 -translate-y-1/2 text-ink/30 transition-colors', t.focusText)} size={20} />
+            <input
+              type="text"
+              autoFocus
+              placeholder="Rechercher par nom ou téléphone…"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              className={cn('w-full input-premium pl-14', t.ring)}
+            />
+          </div>
+          <div className="space-y-2.5 max-h-[320px] overflow-y-auto custom-scrollbar pr-1">
+            {results.length > 0 ? results.map(c => (
+              <button
+                key={c.id}
+                onClick={() => onSelect(c)}
+                className={cn('w-full flex items-center gap-4 p-4 rounded-2xl bg-white border-2 border-border text-left transition-all duration-300 group', t.hoverBorder)}
+              >
+                <div className={cn('w-11 h-11 rounded-2xl flex items-center justify-center font-serif font-bold text-lg shrink-0', t.bgSoft, t.softText)}>
+                  {c.name.charAt(0).toUpperCase()}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-bold text-ink truncate">{c.name}</p>
+                  {c.phone && <p className="text-xs font-semibold text-ink/40 flex items-center gap-1.5 mt-0.5"><Phone size={11} /> {c.phone}</p>}
+                </div>
+                <div className={cn('w-8 h-8 rounded-full flex items-center justify-center text-ink/20 group-hover:text-white transition-all duration-300 group-hover:scale-110', t.hoverBg)}>
+                  <ChevronRight size={18} />
+                </div>
+              </button>
+            )) : (
+              <div className="py-12 text-center space-y-4">
+                <div className={cn('w-14 h-14 rounded-full flex items-center justify-center mx-auto', t.bgSoft, t.softText)}>
+                  <Users size={26} />
+                </div>
+                <p className="text-sm font-medium text-ink/40">
+                  {query.trim() ? 'Aucun client trouvé.' : 'Aucun client enregistré.'}
+                </p>
+                <button
+                  onClick={() => { setNewName(query.trim()); setTab('create'); }}
+                  className={cn('inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm text-white bg-gradient-to-r transition-all', t.grad)}
+                >
+                  <UserPlus size={16} /> Créer « {query.trim() || 'nouveau client'} »
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      ) : (
+        <div className="p-6 sm:p-7 rounded-[28px] bg-white border border-border shadow-sm space-y-5">
+          <div className="space-y-2.5">
+            <label className="text-xs font-bold uppercase tracking-widest text-ink/60 ml-1">Nom du client</label>
+            <div className="relative group">
+              <User className={cn('absolute left-5 top-1/2 -translate-y-1/2 text-ink/30 transition-colors', t.focusText)} size={20} />
+              <input
+                type="text"
+                autoFocus
+                placeholder="Ex: Mme. Fatima Zohra"
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+                className={cn('w-full input-premium pl-14', t.ring)}
+              />
+            </div>
+          </div>
+          <div className="space-y-2.5">
+            <label className="text-xs font-bold uppercase tracking-widest text-ink/60 ml-1">Téléphone <span className="text-ink/30 normal-case">(optionnel)</span></label>
+            <div className="relative group">
+              <Phone className={cn('absolute left-5 top-1/2 -translate-y-1/2 text-ink/30 transition-colors', t.focusText)} size={20} />
+              <input
+                type="tel"
+                placeholder="0550 00 00 00"
+                value={newPhone}
+                onChange={(e) => setNewPhone(e.target.value)}
+                className={cn('w-full input-premium pl-14', t.ring)}
+              />
+            </div>
+          </div>
+          <button
+            onClick={handleCreate}
+            disabled={!newName.trim() || busy}
+            className={cn('w-full py-4 rounded-2xl font-bold text-white flex items-center justify-center gap-2.5 bg-gradient-to-r transition-all disabled:opacity-40 disabled:cursor-not-allowed', t.grad)}
+          >
+            <UserPlus size={20} /> {busy ? 'Création…' : 'Créer & sélectionner'}
+          </button>
+          <p className="text-[11px] text-ink/40 font-medium text-center leading-relaxed">
+            Le client sera enregistré et visible sur la page « Clients ».
+          </p>
+        </div>
+      )}
+    </div>
+  );
+};
+
 const Reservations: React.FC<ReservationsProps> = ({ user: currentUser, config }) => {
   const [view, setView] = useState<'list' | 'create' | 'calendar' | 'walkin'>('list');
   const [walkStep, setWalkStep] = useState(1);
@@ -81,6 +301,7 @@ const Reservations: React.FC<ReservationsProps> = ({ user: currentUser, config }
   const [selectedPrestation, setSelectedPrestation] = useState<Prestation | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [clientInfo, setClientInfo] = useState({ name: '', phone: '', time: '10:00' });
+  const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
   const [totalPrice, setTotalPrice] = useState(0);
   const [paidAmount, setPaidAmount] = useState(0);
@@ -100,6 +321,7 @@ const Reservations: React.FC<ReservationsProps> = ({ user: currentUser, config }
   const [services, setServices] = useState<Service[]>([]);
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [reservations, setReservations] = useState<Reservation[]>([]);
+  const [clients, setClients] = useState<PickerClient[]>([]);
 
   // Finalize state
   const [finalPrice, setFinalPrice] = useState(0);
@@ -184,13 +406,18 @@ const Reservations: React.FC<ReservationsProps> = ({ user: currentUser, config }
         { data: pData, error: pError },
         { data: sData, error: sError },
         { data: eData, error: eError },
-        { data: rData, error: rError }
+        { data: rData, error: rError },
+        { data: cData, error: cError }
       ] = await Promise.all([
         supabase.from('prestations').select('id, name, price'),
         supabase.from('services').select('id, name, price'),
         supabase.from('profiles').select('id, username, full_name, role, payment_type, percentage, created_at').neq('role', 'admin'),
-        supabase.from('reservations').select('*').order('date', { ascending: false }).limit(500)
+        supabase.from('reservations').select('*').order('date', { ascending: false }).limit(500),
+        supabase.from('clients').select('id, name, phone').order('created_at', { ascending: false })
       ]);
+
+      if (cError) console.error('Error fetching clients:', cError);
+      else setClients((cData || []) as PickerClient[]);
 
       if (pError) console.error('Error fetching prestations:', pError);
       else setPrestations(pData || []);
@@ -276,9 +503,49 @@ const Reservations: React.FC<ReservationsProps> = ({ user: currentUser, config }
     setTotalPrice(total);
   };
 
+  // ── Clients ────────────────────────────────────────────────────────────────
+  // Insert a brand-new client into the database and keep the local list in sync
+  // so it shows up immediately here AND on the Clients page (which reads the same
+  // table). Returns the created client (with its id) or null on failure.
+  const createClient = async (name: string, phone: string): Promise<PickerClient | null> => {
+    const trimmed = name.trim();
+    if (!trimmed) return null;
+    const { data, error } = await supabase
+      .from('clients')
+      .insert([{ name: trimmed, phone: phone.trim() || null }])
+      .select('id, name, phone')
+      .single();
+    if (error || !data) {
+      console.error('Error creating client:', error);
+      return null;
+    }
+    const created = data as PickerClient;
+    setClients(prev => [created, ...prev]);
+    return created;
+  };
+
+  // Resolve the client_id to store on a reservation. If a client was picked we
+  // use it; otherwise, when a name is present, we reuse a matching existing
+  // client (same name + phone) or create one on the fly so every named
+  // reservation is linked to a real client record.
+  const resolveClientId = async (): Promise<string | null> => {
+    if (selectedClientId) return selectedClientId;
+    const name = clientInfo.name.trim();
+    if (!name) return null;
+    const phone = clientInfo.phone.trim();
+    const existing = clients.find(
+      c => c.name.trim().toLowerCase() === name.toLowerCase() && (c.phone || '').trim() === phone
+    );
+    if (existing) return existing.id;
+    const created = await createClient(name, phone);
+    return created?.id || null;
+  };
+
   const saveReservation = async () => {
+    const clientId = await resolveClientId();
     if (isEditing && selectedReservation) {
       const reservationData = {
+        client_id: clientId,
         client_name: clientInfo.name,
         client_phone: clientInfo.phone,
         prestation_id: selectedPrestation?.id || '',
@@ -298,6 +565,7 @@ const Reservations: React.FC<ReservationsProps> = ({ user: currentUser, config }
     } else {
       // For new reservations, exclude status to let the database use the default value
       const reservationData = {
+        client_id: clientId,
         client_name: clientInfo.name,
         client_phone: clientInfo.phone,
         prestation_id: selectedPrestation?.id || '',
@@ -324,6 +592,7 @@ const Reservations: React.FC<ReservationsProps> = ({ user: currentUser, config }
     setSelectedPrestation(null);
     setSelectedDate(new Date());
     setClientInfo({ name: '', phone: '', time: '10:00' });
+    setSelectedClientId(null);
     setSelectedServices([]);
     setTotalPrice(0);
     setPaidAmount(0);
@@ -340,6 +609,7 @@ const Reservations: React.FC<ReservationsProps> = ({ user: currentUser, config }
     setSelectedPrestation(null);
     setSelectedServices([]);
     setClientInfo({ name: '', phone: '', time: format(new Date(), 'HH:mm') });
+    setSelectedClientId(null);
     setSelectedDate(new Date());
     setTotalPrice(0);
     setPaidAmount(0);
@@ -362,8 +632,12 @@ const Reservations: React.FC<ReservationsProps> = ({ user: currentUser, config }
 
     setIsSavingWalkIn(true);
     try {
+      // Link to a real client record when the walk-in is named (a "client
+      // passager" with no name stays unlinked).
+      const clientId = trimmedName ? await resolveClientId() : null;
       const nowIso = new Date().toISOString();
       const reservationData = {
+        client_id: clientId,
         client_name: trimmedName || 'Client passager',
         client_phone: clientInfo.phone.trim(),
         prestation_id: selectedPrestation.id,
@@ -418,7 +692,7 @@ const Reservations: React.FC<ReservationsProps> = ({ user: currentUser, config }
       // Build the reservation object for the receipt/print step.
       setSelectedReservation({
         id: inserted.id,
-        clientId: 'new',
+        clientId: clientId || 'new',
         clientName: reservationData.client_name,
         clientPhone: reservationData.client_phone,
         prestationId: selectedPrestation.id,
@@ -451,6 +725,7 @@ const Reservations: React.FC<ReservationsProps> = ({ user: currentUser, config }
     setSelectedPrestation(prestations.find((p: Prestation) => p.id === res.prestationId) || null);
     setSelectedDate(new Date(res.date));
     setClientInfo({ name: res.clientName, phone: res.clientPhone, time: res.time });
+    setSelectedClientId(res.clientId && res.clientId !== 'new' ? res.clientId : null);
     setSelectedServices(res.serviceIds);
     setTotalPrice(res.totalPrice);
     setPaidAmount(res.paidAmount);
@@ -831,137 +1106,160 @@ const Reservations: React.FC<ReservationsProps> = ({ user: currentUser, config }
                     res.clientPhone.includes(searchQuery)
                   );
                 })
-                .map((res, idx) => (
-                <motion.div 
-                  key={res.id} 
+                .map((res, idx) => {
+                  const rest = res.totalPrice - res.paidAmount;
+                  const prestationName = prestations.find(p => p.id === res.prestationId)?.name;
+                  return (
+                <motion.div
+                  key={res.id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: idx * 0.1 }}
-                  className="card-premium p-7 flex flex-col group hover:translate-y-[-4px] transition-all duration-300"
+                  transition={{ delay: Math.min(idx * 0.05, 0.4) }}
+                  className="group relative rounded-premium bg-white/80 backdrop-blur-xl border border-white/60 shadow-premium overflow-hidden flex flex-col hover:-translate-y-1.5 hover:shadow-2xl transition-all duration-300"
                 >
-                  <div className="flex justify-between items-start mb-6">
-                    <div className="flex items-center gap-4">
-                      <div className="w-14 h-14 rounded-2xl bg-accent/10 flex items-center justify-center text-accent shadow-inner">
-                        <User size={28} />
-                      </div>
-                      <div>
-                        <h4 className="font-serif font-bold text-xl text-ink tracking-tight">{res.clientName}</h4>
-                        <div className="flex items-center gap-1.5 text-ink/40 mt-1">
-                          <Phone size={12} />
-                          <p className="text-xs font-semibold">{res.clientPhone}</p>
+                  {/* Colored top accent by type */}
+                  <div className={cn(
+                    "h-1.5 w-full bg-gradient-to-r",
+                    res.isWalkIn ? "from-emerald-400 to-emerald-500" : "from-accent to-accent-light"
+                  )} />
+
+                  <div className="p-6 flex flex-col flex-1">
+                    {/* Header */}
+                    <div className="flex items-start justify-between gap-3 mb-4">
+                      <div className="flex items-center gap-3.5 min-w-0">
+                        <div className={cn(
+                          "w-12 h-12 rounded-2xl flex items-center justify-center text-white font-serif font-bold text-xl shrink-0 shadow-lg bg-gradient-to-br",
+                          res.isWalkIn ? "from-emerald-400 to-emerald-500 shadow-emerald-500/25" : "from-accent to-accent-light shadow-accent/25"
+                        )}>
+                          {res.clientName.charAt(0).toUpperCase()}
+                        </div>
+                        <div className="min-w-0">
+                          <h4 className="font-serif font-bold text-lg text-ink tracking-tight truncate">{res.clientName}</h4>
+                          {res.clientPhone
+                            ? <p className="text-xs font-semibold text-ink/40 flex items-center gap-1.5 mt-0.5"><Phone size={11} /> {res.clientPhone}</p>
+                            : <p className="text-[11px] font-medium text-ink/30 italic mt-0.5">Client passager</p>}
                         </div>
                       </div>
-                    </div>
-                    <div className="flex flex-col gap-2 items-end">
-                      {res.isWalkIn && (
-                        <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-[0.15em] shadow-sm bg-emerald-500 text-white border border-emerald-500 flex items-center gap-1">
-                          <Zap size={11} /> Sur Place
-                        </span>
-                      )}
                       <span className={cn(
-                        "px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-[0.15em] shadow-sm",
-                        res.status === 'pending' ? "bg-amber-50 text-amber-600 border border-amber-100" : "bg-emerald-50 text-emerald-600 border border-emerald-100"
+                        "px-2.5 py-1 rounded-full text-[9px] font-bold uppercase tracking-[0.12em] shrink-0 flex items-center gap-1 border",
+                        res.isWalkIn ? "bg-emerald-500 text-white border-emerald-500" : "bg-accent/10 text-accent border-accent/20"
                       )}>
+                        {res.isWalkIn ? <><Zap size={10} /> Sur Place</> : <><CalendarIcon size={10} /> RDV</>}
+                      </span>
+                    </div>
+
+                    {/* Status + payment chips */}
+                    <div className="flex flex-wrap gap-2 mb-5">
+                      <span className={cn(
+                        "px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-[0.12em] flex items-center gap-1.5",
+                        res.status === 'pending' ? "bg-amber-50 text-amber-600" : "bg-emerald-50 text-emerald-600"
+                      )}>
+                        <span className={cn("w-1.5 h-1.5 rounded-full", res.status === 'pending' ? "bg-amber-500" : "bg-emerald-500")} />
                         {res.status === 'pending' ? 'En attente' : 'Finalisé'}
                       </span>
                       <span className={cn(
-                        "px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-[0.15em] shadow-sm",
-                        res.totalPrice - res.paidAmount > 0 ? "bg-red-50 text-red-600 border border-red-100" : "bg-green-50 text-green-600 border border-green-100"
+                        "px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-[0.12em] flex items-center gap-1.5",
+                        rest > 0 ? "bg-red-50 text-red-600" : "bg-green-50 text-green-600"
                       )}>
-                        {res.totalPrice - res.paidAmount > 0 ? `Dette: ${formatCurrency(res.totalPrice - res.paidAmount)}` : 'Payé'}
+                        {rest > 0 ? <AlertCircle size={11} /> : <Check size={11} />}
+                        {rest > 0 ? `Dette ${formatCurrency(rest)}` : 'Payé'}
                       </span>
                     </div>
-                  </div>
 
-                  <div className="grid grid-cols-2 gap-4 mb-8">
-                    <div className="flex items-center gap-3 p-3 rounded-xl bg-primary-bg/50 border border-border/50">
-                      <CalendarIcon size={16} className="text-accent opacity-70" />
-                      <div>
-                        <p className="text-[10px] uppercase font-bold text-ink/30 tracking-wider">Date</p>
-                        <p className="text-xs font-bold text-ink/70">{format(new Date(res.date), 'dd MMM yyyy', { locale: fr })}</p>
+                    {/* Info rows */}
+                    <div className="grid grid-cols-2 gap-2.5 mb-3">
+                      <div className="flex items-center gap-2.5 p-3 rounded-2xl bg-primary-bg/50 border border-border/50">
+                        <CalendarIcon size={15} className="text-accent/60 shrink-0" />
+                        <div className="min-w-0">
+                          <p className="text-[9px] uppercase font-bold text-ink/30 tracking-wider">Date</p>
+                          <p className="text-xs font-bold text-ink/70 truncate">{format(new Date(res.date), 'dd MMM yyyy', { locale: fr })}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2.5 p-3 rounded-2xl bg-primary-bg/50 border border-border/50">
+                        <Clock size={15} className="text-accent/60 shrink-0" />
+                        <div className="min-w-0">
+                          <p className="text-[9px] uppercase font-bold text-ink/30 tracking-wider">Heure</p>
+                          <p className="text-xs font-bold text-ink/70">{res.time}</p>
+                        </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3 p-3 rounded-xl bg-primary-bg/50 border border-border/50">
-                      <Clock size={16} className="text-accent opacity-70" />
-                      <div>
-                        <p className="text-[10px] uppercase font-bold text-ink/30 tracking-wider">Heure</p>
-                        <p className="text-xs font-bold text-ink/70">{res.time}</p>
+
+                    <div className="flex items-center gap-2.5 p-3 rounded-2xl bg-accent/5 border border-accent/10 mb-5">
+                      <Scissors size={16} className="text-accent shrink-0" />
+                      <div className="min-w-0">
+                        <p className="text-[9px] uppercase font-bold text-accent/70 tracking-widest">Prestation</p>
+                        <p className="text-sm font-bold text-ink truncate">{prestationName || '—'}</p>
                       </div>
                     </div>
-                  </div>
 
-                  <div className="flex items-center gap-3 mb-8 p-3 rounded-xl bg-accent/5 border border-accent/10">
-                    <Scissors size={18} className="text-accent" />
-                    <div>
-                      <p className="text-[10px] uppercase font-bold text-accent tracking-widest opacity-70">Prestation</p>
-                      <p className="text-sm font-bold text-ink">{prestations.find(p => p.id === res.prestationId)?.name}</p>
-                    </div>
-                  </div>
+                    {/* Totals + Actions */}
+                    <div className="mt-auto pt-5 border-t border-border/60 flex flex-col gap-3">
+                      <div className="flex items-end justify-between">
+                        <div>
+                          <p className="text-[10px] uppercase font-bold text-ink/30 tracking-widest mb-0.5">Total</p>
+                          <p className="font-serif font-bold text-2xl text-ink leading-none">{formatCurrency(res.totalPrice)}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-[10px] uppercase font-bold text-ink/30 tracking-widest mb-0.5">{rest > 0 ? 'Reste' : 'Payé'}</p>
+                          <p className={cn("font-bold text-base leading-none", rest > 0 ? "text-red-500" : "text-emerald-600")}>
+                            {formatCurrency(rest > 0 ? rest : res.paidAmount)}
+                          </p>
+                        </div>
+                      </div>
 
-                  <div className="mt-auto pt-6 border-t border-border flex items-center justify-between">
-                    <div>
-                      <p className="text-[10px] uppercase font-bold text-ink/30 tracking-widest">Total</p>
-                      <p className="font-serif font-bold text-xl text-accent">{formatCurrency(res.totalPrice)}</p>
-                    </div>
-                    <div className="flex gap-2">
-                      <button 
-                        onClick={() => {
-                          setSelectedReservation(res);
-                          setModal('details');
-                        }}
-                        className="p-2.5 rounded-xl bg-white border border-border text-ink/40 hover:text-accent hover:border-accent/40 transition-all duration-300 shadow-sm"
-                      >
-                        <Eye size={18} />
-                      </button>
-                      <button 
-                        onClick={() => handleEdit(res)}
-                        className="p-2.5 rounded-xl bg-white border border-border text-ink/40 hover:text-accent hover:border-accent/40 transition-all duration-300 shadow-sm"
-                      >
-                        <Edit2 size={18} />
-                      </button>
-                      {res.status === 'pending' ? (
-                        <button 
-                          onClick={() => handleFinalize(res)}
-                          className="p-2.5 rounded-xl bg-accent text-white hover:bg-accent-light transition-all duration-300 shadow-lg shadow-accent/20"
+                      {/* Primary contextual action + pay debt */}
+                      <div className="flex items-center gap-2">
+                        {res.status === 'pending' ? (
+                          <button
+                            onClick={() => handleFinalize(res)}
+                            className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-gradient-to-r from-accent to-accent-light text-white font-bold text-sm shadow-lg shadow-accent/25 hover:shadow-accent/40 hover:-translate-y-0.5 transition-all duration-300"
+                          >
+                            <Check size={17} /> Finaliser
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => { setSelectedReservation(res); setModal('print'); }}
+                            className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-emerald-500 text-white font-bold text-sm shadow-lg shadow-emerald-500/25 hover:bg-emerald-600 hover:-translate-y-0.5 transition-all duration-300"
+                          >
+                            <Printer size={17} /> Imprimer
+                          </button>
+                        )}
+                        {rest > 0 && (
+                          <button
+                            onClick={() => { setSelectedReservation(res); setCurrentPayment(0); setModal('payDebt'); }}
+                            className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-amber-100 text-amber-600 font-bold text-sm hover:bg-amber-500 hover:text-white transition-all duration-300"
+                          >
+                            <CreditCard size={17} /> Payer
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Secondary actions */}
+                      <div className="grid grid-cols-3 gap-2">
+                        <button
+                          onClick={() => { setSelectedReservation(res); setModal('details'); }}
+                          className="flex items-center justify-center gap-1.5 py-2 rounded-xl bg-ink/5 text-ink/50 font-bold text-xs hover:bg-ink hover:text-white transition-all duration-300"
                         >
-                          <Check size={18} />
+                          <Eye size={15} /> Détails
                         </button>
-                      ) : (
-                        <button 
-                          onClick={() => {
-                            setSelectedReservation(res);
-                            setModal('print');
-                          }}
-                          className="p-2.5 rounded-xl bg-emerald-500 text-white hover:bg-emerald-600 transition-all duration-300 shadow-lg shadow-emerald-500/20"
+                        <button
+                          onClick={() => handleEdit(res)}
+                          className="flex items-center justify-center gap-1.5 py-2 rounded-xl bg-blue-50 text-blue-500 font-bold text-xs hover:bg-blue-500 hover:text-white transition-all duration-300"
                         >
-                          <Printer size={18} />
+                          <Edit2 size={15} /> Modifier
                         </button>
-                      )}
-                      {res.totalPrice > res.paidAmount && (
-                        <button 
-                          onClick={() => {
-                            setSelectedReservation(res);
-                            setCurrentPayment(0);
-                            setModal('payDebt');
-                          }}
-                          className="p-2.5 rounded-xl bg-amber-500 text-white hover:bg-amber-600 transition-all duration-300 shadow-lg shadow-amber-500/20"
+                        <button
+                          onClick={() => { setSelectedReservation(res); setModal('delete'); }}
+                          className="flex items-center justify-center gap-1.5 py-2 rounded-xl bg-red-50 text-red-500 font-bold text-xs hover:bg-red-500 hover:text-white transition-all duration-300"
                         >
-                          <CreditCard size={18} />
+                          <Trash2 size={15} /> Suppr.
                         </button>
-                      )}
-                      <button 
-                        onClick={() => {
-                          setSelectedReservation(res);
-                          setModal('delete');
-                        }}
-                        className="p-2.5 rounded-xl bg-white border border-red-100 text-red-400 hover:bg-red-50 transition-all duration-300 shadow-sm"
-                      >
-                        <Trash2 size={18} />
-                      </button>
+                      </div>
                     </div>
                   </div>
                 </motion.div>
-              ))}
+                  );
+                })}
             </div>
           </motion.div>
         )}
@@ -1296,37 +1594,21 @@ const Reservations: React.FC<ReservationsProps> = ({ user: currentUser, config }
                   <h3 className="text-3xl font-serif font-bold text-ink tracking-tight">Informations Client</h3>
                   <p className="text-ink/40 mt-2 font-medium">Laissez vide pour enregistrer un client passager</p>
                 </div>
-                <div className="max-w-xl mx-auto p-8 rounded-[40px] bg-white border border-border shadow-sm space-y-8">
-                  <div className="space-y-3">
-                    <label className="text-xs font-bold uppercase tracking-widest text-ink/60 ml-1">Nom du Client <span className="text-ink/30 normal-case">(optionnel)</span></label>
-                    <div className="relative group">
-                      <User className="absolute left-5 top-1/2 -translate-y-1/2 text-ink/30 group-focus-within:text-emerald-500 transition-colors" size={20} />
-                      <input
-                        type="text"
-                        placeholder="Ex: Ahmed (laisser vide = passager)"
-                        value={clientInfo.name}
-                        onChange={(e) => setClientInfo({ ...clientInfo, name: e.target.value })}
-                        className="w-full input-premium pl-14"
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-3">
-                    <label className="text-xs font-bold uppercase tracking-widest text-ink/60 ml-1">Téléphone <span className="text-ink/30 normal-case">(optionnel)</span></label>
-                    <div className="relative group">
-                      <Phone className="absolute left-5 top-1/2 -translate-y-1/2 text-ink/30 group-focus-within:text-emerald-500 transition-colors" size={20} />
-                      <input
-                        type="tel"
-                        placeholder="0550 00 00 00"
-                        value={clientInfo.phone}
-                        onChange={(e) => setClientInfo({ ...clientInfo, phone: e.target.value })}
-                        className="w-full input-premium pl-14"
-                      />
-                    </div>
-                  </div>
+                <div className="max-w-xl mx-auto space-y-6">
+                  <ClientPicker
+                    theme="emerald"
+                    clients={clients}
+                    name={clientInfo.name}
+                    phone={clientInfo.phone}
+                    selectedId={selectedClientId}
+                    onSelect={(c) => { setClientInfo({ ...clientInfo, name: c.name, phone: c.phone || '' }); setSelectedClientId(c.id); }}
+                    onClear={() => { setClientInfo({ ...clientInfo, name: '', phone: '' }); setSelectedClientId(null); }}
+                    onCreate={createClient}
+                  />
                   <div className="p-4 rounded-2xl bg-emerald-50/60 border border-emerald-100 flex items-start gap-3">
                     <AlertCircle size={18} className="text-emerald-500 mt-0.5 flex-shrink-0" />
                     <p className="text-xs text-ink/60 font-medium leading-relaxed">
-                      Un client sans nom sera enregistré comme <span className="font-bold text-emerald-600">Client passager</span>. Le nom devient obligatoire s'il reste un montant à payer.
+                      Sans sélection, la vente est enregistrée comme <span className="font-bold text-emerald-600">Client passager</span>. Le nom devient obligatoire s'il reste un montant à payer.
                     </p>
                   </div>
                 </div>
@@ -1710,36 +1992,19 @@ const Reservations: React.FC<ReservationsProps> = ({ user: currentUser, config }
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
                   <div className="space-y-8">
-                    <div className="p-8 rounded-[40px] bg-white border border-border shadow-sm space-y-8">
-                      <div className="space-y-3">
-                        <label className="text-xs font-bold uppercase tracking-widest text-ink/60 ml-1">Nom Complet de la Cliente</label>
-                        <div className="relative group">
-                          <User className="absolute left-5 top-1/2 -translate-y-1/2 text-ink/30 group-focus-within:text-accent transition-colors" size={20} />
-                          <input 
-                            type="text" 
-                            placeholder="Ex: Mme. Fatima Zohra"
-                            value={clientInfo.name}
-                            onChange={(e) => setClientInfo({...clientInfo, name: e.target.value})}
-                            className="w-full input-premium pl-14" 
-                          />
-                        </div>
-                      </div>
+                    <ClientPicker
+                      theme="accent"
+                      clients={clients}
+                      name={clientInfo.name}
+                      phone={clientInfo.phone}
+                      selectedId={selectedClientId}
+                      onSelect={(c) => { setClientInfo({ ...clientInfo, name: c.name, phone: c.phone || '' }); setSelectedClientId(c.id); }}
+                      onClear={() => { setClientInfo({ ...clientInfo, name: '', phone: '' }); setSelectedClientId(null); }}
+                      onCreate={createClient}
+                    />
 
-                      <div className="space-y-3">
-                        <label className="text-xs font-bold uppercase tracking-widest text-ink/60 ml-1">Téléphone</label>
-                        <div className="relative group">
-                          <Phone className="absolute left-5 top-1/2 -translate-y-1/2 text-ink/30 group-focus-within:text-accent transition-colors" size={20} />
-                          <input 
-                            type="tel" 
-                            placeholder="0550 00 00 00"
-                            value={clientInfo.phone}
-                            onChange={(e) => setClientInfo({...clientInfo, phone: e.target.value})}
-                            className="w-full input-premium pl-14" 
-                          />
-                        </div>
-                      </div>
-
-                      <div className="space-y-6 pt-4 border-t border-border">
+                    <div className="p-8 rounded-[40px] bg-white border border-border shadow-sm space-y-6">
+                      <div className="space-y-6">
                         <label className="text-xs font-bold uppercase tracking-widest text-ink/60 ml-1">Heure du rendez-vous</label>
                         <div className="flex items-center gap-4">
                           <div className="flex-1 space-y-2">
@@ -1859,9 +2124,9 @@ const Reservations: React.FC<ReservationsProps> = ({ user: currentUser, config }
 
                 <div className="flex justify-between pt-10">
                   <button onClick={handleBack} className="px-10 py-4 rounded-2xl bg-white border border-border font-bold text-ink/40 hover:text-accent hover:border-accent/40 transition-all duration-300">Retour</button>
-                  <button 
-                    disabled={!clientInfo.name || !clientInfo.phone}
-                    onClick={handleNext} 
+                  <button
+                    disabled={!clientInfo.name.trim()}
+                    onClick={handleNext}
                     className="btn-gradient shimmer px-10 py-4 disabled:opacity-30 flex items-center gap-3"
                   >
                     Suivant <ChevronRight size={20} />
