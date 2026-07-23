@@ -1,0 +1,139 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary-bg: #FDFCFB;
+  --color-ink: #1A1A1A;
+  --color-accent: #B76E79; /* Rose Gold */
+  --color-accent-light: #E8A0BF;
+  --color-glass: rgba(255, 255, 255, 0.7);
+  --color-border: rgba(183, 110, 121, 0.15);
+  
+  --font-serif: "Playfair Display", serif;
+  --font-sans: "Inter", system-ui, sans-serif;
+
+  --radius-premium: 24px;
+  --shadow-premium: 0 20px 40px -15px rgba(183, 110, 121, 0.1);
+}
+
+@layer base {
+  /* Using system fonts for offline compatibility */
+  @font-face {
+    font-family: 'Playfair Display';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: local('Georgia'), local('Garamond'), serif;
+  }
+
+  @font-face {
+    font-family: 'Playfair Display';
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: local('Georgia Bold'), local('Garamond Bold'), serif;
+  }
+
+  @font-face {
+    font-family: 'Playfair Display';
+    font-style: italic;
+    font-weight: 400;
+    font-display: swap;
+    src: local('Georgia Italic'), local('Garamond Italic'), serif;
+  }
+
+  @font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 300;
+    font-display: swap;
+    src: local('-apple-system'), local('BlinkMacSystemFont'), local('Segoe UI'), local('Roboto'), local('Helvetica Neue'), sans-serif;
+  }
+
+  @font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: local('-apple-system'), local('BlinkMacSystemFont'), local('Segoe UI'), local('Roboto'), local('Helvetica Neue'), sans-serif;
+  }
+
+  @font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: local('-apple-system'), local('BlinkMacSystemFont'), local('Segoe UI'), local('Roboto'), local('Helvetica Neue'), sans-serif;
+  }
+
+  @font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 600;
+    font-display: swap;
+    src: local('-apple-system'), local('BlinkMacSystemFont'), local('Segoe UI'), local('Roboto'), local('Helvetica Neue'), sans-serif;
+  }
+
+  body {
+    @apply bg-primary-bg text-ink font-sans antialiased;
+  }
+
+  h1, h2, h3 {
+    @apply font-serif;
+  }
+}
+
+@utility glass {
+  @apply bg-glass backdrop-blur-2xl border border-white/40;
+}
+
+@utility card-premium {
+  @apply glass rounded-premium shadow-premium transition-all duration-500 hover:shadow-2xl hover:-translate-y-1;
+}
+
+@utility btn-gradient {
+  @apply relative overflow-hidden bg-linear-to-r from-[#B76E79] via-[#E8A0BF] to-[#B76E79] bg-[length:200%_auto] text-white font-medium rounded-full px-8 py-3 shadow-lg hover:bg-right transition-all duration-500 active:scale-95;
+}
+
+@utility input-premium {
+  @apply bg-white/40 border border-border rounded-2xl px-5 py-3.5 focus:outline-hidden focus:ring-2 focus:ring-accent/20 transition-all duration-300 placeholder:text-ink/30;
+}
+
+@utility shimmer {
+  @apply relative before:absolute before:inset-0 before:-translate-x-full before:animate-[shimmer_2s_infinite] before:bg-linear-to-r before:from-transparent before:via-white/20 before:to-transparent;
+}
+
+@keyframes shimmer {
+  100% { transform: translateX(100%); }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-accent/20 rounded-full hover:bg-accent/40 transition-colors;
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .printable-area, .printable-area * {
+    visibility: visible;
+  }
+  .printable-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    margin: 0;
+    padding: 20px;
+    background: white !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+}
