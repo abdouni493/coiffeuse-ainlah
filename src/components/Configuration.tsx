@@ -22,6 +22,7 @@ import {
 import { User, StoreConfig } from '../types';
 import { cn } from '../lib/utils';
 import { supabase } from '../lib/supabase';
+import { uploadImage } from '../lib/storage';
 
 interface ConfigurationProps {
   user: User;
@@ -106,17 +107,17 @@ const Configuration: React.FC<ConfigurationProps> = ({ user, config: initialConf
     }
 
     setIsSaving(true);
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const base64 = event.target?.result as string;
+    try {
       if (type === 'logo') {
-        setConfig({ ...config, logo: base64 });
+        const url = await uploadImage('logos', file);
+        setConfig(c => ({ ...c, logo: url }));
       } else if (type === 'avatar') {
-        setProfile({ ...profile, avatar: base64 });
+        const url = await uploadImage('avatars', file, user.id);
+        setProfile(p => ({ ...p, avatar: url }));
       }
+    } finally {
       setIsSaving(false);
-    };
-    reader.readAsDataURL(file);
+    }
   };
 
   const handleBackup = async () => {

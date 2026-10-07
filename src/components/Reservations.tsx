@@ -27,9 +27,10 @@ import {
   UserPlus,
   UserCheck,
   Users,
-  Award
+  Award,
+  History
 } from 'lucide-react';
-import { format, addDays, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, addMonths, subMonths, startOfWeek, endOfWeek, isSameMonth } from 'date-fns';
+import { format, addDays, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, addMonths, subMonths, startOfWeek, endOfWeek, isSameMonth, subDays } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { Reservation, Prestation, Service, User as Employee, StoreConfig, FidelityConfig } from '../types';
 import { cn, formatCurrency } from '../lib/utils';
@@ -747,6 +748,11 @@ const Reservations: React.FC<ReservationsProps> = ({ user: currentUser, config }
   const [view, setView] = useState<'list' | 'create' | 'calendar' | 'walkin'>('list');
   const [walkStep, setWalkStep] = useState(1);
   const [isSavingWalkIn, setIsSavingWalkIn] = useState(false);
+  // "Coiffure directe ancienne": a walk-in recorded after the fact, with a
+  // user-chosen past date/time instead of "now".
+  const [walkInPast, setWalkInPast] = useState(false);
+  const [walkInDate, setWalkInDate] = useState(format(new Date(), 'yyyy-MM-dd'));
+  const [walkInTime, setWalkInTime] = useState(format(new Date(), 'HH:mm'));
   const [modal, setModal] = useState<'details' | 'finalise' | 'payDebt' | 'changeDate' | 'delete' | 'print' | 'dayView' | null>(null);
   const [step, setStep] = useState(1);
   // Several prestations can be booked on one reservation. The first one is the
@@ -898,6 +904,7 @@ const Reservations: React.FC<ReservationsProps> = ({ user: currentUser, config }
 
   // A walk-in ("sur place") is stamped with finalized_at === created_at.
   const isWalkInRow = (r: any): boolean => {
+    if (r?.is_walk_in) return true;
     if (!r?.finalized_at || !r?.created_at) return false;
     return Math.abs(new Date(r.finalized_at).getTime() - new Date(r.created_at).getTime()) < 1000;
   };
@@ -1136,7 +1143,10 @@ const Reservations: React.FC<ReservationsProps> = ({ user: currentUser, config }
   // ============================================================================
   // WALK-IN ("Réservation Sur Place") — client comes now & finalises immediately
   // ============================================================================
-  const openWalkIn = () => {
+  const openWalkIn = (past = false) => {
+    setWalkInPast(past);
+    setWalkInDate(format(past ? subDays(new Date(), 1) : new Date(), 'yyyy-MM-dd'));
+    setWalkInTime(format(new Date(), 'HH:mm'));
     setIsEditing(false);
     setSelectedReservation(null);
     setSelectedPrestations([]);
@@ -1183,7 +1193,11 @@ const Reservations: React.FC<ReservationsProps> = ({ user: currentUser, config }
       // Link to a real client record when the walk-in is named (a "client
       // passager" with no name stays unlinked).
       const clientId = trimmedName ? await resolveClientId() : null;
-      const nowIso = new Date().toISOString();
+      // Past walk-ins are stamped at the chosen date/time; created_at and
+      // finalized_at share that timestamp so the row is still a walk-in and
+      // lands on the right day in the caisse and reports.
+      const when = walkInPast ? new Date(`${walkInDate}T${walkInTime || '12:00'}:00`) : new Date();
+      const nowIso = when.toISOString();
       const reservationData = {
         client_id: clientId,
         client_name: trimmedName || 'Client passager',
@@ -1191,8 +1205,8 @@ const Reservations: React.FC<ReservationsProps> = ({ user: currentUser, config }
         prestation_id: selectedPrestations[0].id,
         prestation_ids: selectedPrestations.map(p => p.id),
         service_ids: selectedServices,
-        date: format(new Date(), 'yyyy-MM-dd'),
-        time: format(new Date(), 'HH:mm'),
+        date: format(when, 'yyyy-MM-dd'),
+        time: format(when, 'HH:mm'),
         total_price: walkTotal,
         paid_amount: paidAmount,
         discount_amount: discountAmount,
@@ -1202,6 +1216,8 @@ const Reservations: React.FC<ReservationsProps> = ({ user: currentUser, config }
         created_by: currentUser.id,
         finalized_by: currentUser.id,
         finalized_at: nowIso,
+        is_walk_in: true,
+        ...(walkInPast ? { created_at: nowIso } : {}),
       };
 
       const { data: inserted, error } = await supabase
@@ -1853,11 +1869,21 @@ const Reservations: React.FC<ReservationsProps> = ({ user: currentUser, config }
           </button>
           {view !== 'create' && view !== 'walkin' && can('create') && (
             <button
-              onClick={openWalkIn}
+              onClick={() => openWalkIn(false)}
               className="flex items-center gap-2.5 px-6 py-2.5 rounded-2xl bg-emerald-500 text-white font-bold shadow-lg shadow-emerald-500/20 hover:bg-emerald-600 transition-all duration-300"
             >
               <Zap size={20} />
               Réservation Sur Place
+            </button>
+          )}
+          {view !== 'create' && view !== 'walkin' && can('create') && (
+            <button
+              onClick={() => openWalkIn(true)}
+              title="Enregistrer une coiffure directe passée à une date choisie"
+              className="flex items-center gap-2.5 px-6 py-2.5 rounded-2xl bg-surface/40 border border-emerald-500/40 text-emerald-600 font-bold hover:bg-emerald-50 transition-all duration-300"
+            >
+              <History size={20} />
+              Coiffure Directe Ancienne
             </button>
           )}
           {view !== 'create' && view !== 'walkin' && can('create') && (
@@ -2495,7 +2521,7 @@ const Reservations: React.FC<ReservationsProps> = ({ user: currentUser, config }
               </div>
               <div className="w-12 flex justify-end shrink-0">
                 <span className="px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-600 text-[10px] font-bold uppercase tracking-widest border border-emerald-100 flex items-center gap-1.5 whitespace-nowrap">
-                  <Zap size={12} /> Sur Place
+                  {walkInPast ? <><History size={12} /> Ancienne</> : <><Zap size={12} /> Sur Place</>}
                 </span>
               </div>
             </div>
@@ -2508,6 +2534,28 @@ const Reservations: React.FC<ReservationsProps> = ({ user: currentUser, config }
                   <p className="text-ink/40 mt-2 font-medium">Laissez vide pour enregistrer un client passager</p>
                 </div>
                 <div className="max-w-xl mx-auto space-y-6">
+                  {walkInPast && (
+                    <div className="p-5 rounded-2xl border-2 border-emerald-500/30 bg-emerald-50/40 space-y-4">
+                      <div className="flex items-center gap-2 text-emerald-600 font-bold text-sm">
+                        <History size={16} /> Date de la coiffure directe
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <input
+                          type="date"
+                          value={walkInDate}
+                          max={format(new Date(), 'yyyy-MM-dd')}
+                          onChange={e => setWalkInDate(e.target.value)}
+                          className="input-premium w-full"
+                        />
+                        <input
+                          type="time"
+                          value={walkInTime}
+                          onChange={e => setWalkInTime(e.target.value)}
+                          className="input-premium w-full"
+                        />
+                      </div>
+                    </div>
+                  )}
                   <ClientPicker
                     theme="emerald"
                     clients={clients}

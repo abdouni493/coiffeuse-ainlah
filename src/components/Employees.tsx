@@ -696,6 +696,10 @@ const Employees: React.FC = () => {
 
       console.log('[DELETE SUCCESS] Employee and all related records deleted:', deletedProfile);
 
+      // Also remove the login (auth.users row) so the email can be reused.
+      const { error: authDeleteError } = await supabase.rpc('delete_user_account', { target: employeeIdToDelete });
+      if (authDeleteError) console.warn('[DELETE] Auth account not removed:', authDeleteError);
+
       // Update local state immediately
       setEmployees(prev => prev.filter(emp => emp.id !== employeeIdToDelete));
       setPayments(prev => prev.filter(p => p.employeeId !== employeeIdToDelete));

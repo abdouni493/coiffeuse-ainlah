@@ -4,8 +4,9 @@ import {
   Calendar, TrendingUp, CheckCircle2, AlertCircle, Users,
   BarChart3, Loader2, Package, Building2, Download,
   PieChart, Play, X, Clock, Sparkles, ChevronRight, Phone,
-  TrendingDown, Activity, CreditCard, FileText, ShoppingBag
+  TrendingDown, Activity, CreditCard, FileText, ShoppingBag, Printer
 } from 'lucide-react';
+import PrintReport from './PrintReport';
 import { cn, formatCurrency } from '../lib/utils';
 import { supabase } from '../lib/supabase';
 
@@ -22,6 +23,7 @@ const Reports: React.FC = () => {
     'purchases' | 'workers' | 'store' | 'debts' | 'benefits' | 'prestation' | null
   >(null);
   const [selectedPrestationId, setSelectedPrestationId] = useState<string | null>(null);
+  const [showPrint, setShowPrint] = useState(false);
 
   const closeModal = () => { setSelectedModal(null); setSelectedPrestationId(null); };
 
@@ -250,18 +252,25 @@ const Reports: React.FC = () => {
 
   return (
     <div className="space-y-6 pb-20">
+      <PrintReport isOpen={showPrint} onClose={() => setShowPrint(false)} />
       {/* Header */}
       <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-accent/10 via-transparent to-accent/5 border border-accent/10 p-8">
         <div className="absolute -right-32 -top-32 w-80 h-80 bg-accent/5 rounded-full blur-3xl pointer-events-none" />
         <div className="relative z-10">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-12 h-12 rounded-2xl bg-accent/20 flex items-center justify-center">
-              <BarChart3 className="text-accent" size={24} />
+          <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-2xl bg-accent/20 flex items-center justify-center">
+                <BarChart3 className="text-accent" size={24} />
+              </div>
+              <div>
+                <h2 className="text-3xl font-serif font-bold text-ink">Rapports & Statistiques</h2>
+                <p className="text-ink/50 text-sm font-medium">Analyse complète de votre activité</p>
+              </div>
             </div>
-            <div>
-              <h2 className="text-3xl font-serif font-bold text-ink">Rapports & Statistiques</h2>
-              <p className="text-ink/50 text-sm font-medium">Analyse complète de votre activité</p>
-            </div>
+            <button onClick={() => setShowPrint(true)}
+              className="px-5 py-3 rounded-xl border-2 border-accent/50 text-accent font-bold text-sm hover:bg-accent hover:text-on-accent transition-all flex items-center gap-2">
+              <Printer size={16} /> Imprimer un rapport
+            </button>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
             <div>

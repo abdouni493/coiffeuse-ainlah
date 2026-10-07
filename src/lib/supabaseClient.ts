@@ -5,11 +5,11 @@ import { createClient } from '@supabase/supabase-js';
 // env vars (VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY) for other environments.
 const SUPABASE_URL =
   (import.meta.env.VITE_SUPABASE_URL as string | undefined) ||
-  'https://ungdkbgweivotrezyase.supabase.co';
+  'https://klwovduevlwvoccxhbpm.supabase.co';
 
 const SUPABASE_ANON_KEY =
   (import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined) ||
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVuZ2RrYmd3ZWl2b3RyZXp5YXNlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ3NTA4MjgsImV4cCI6MjEwMDMyNjgyOH0.SpOBGnTKEUngVnYyLuHbZEgfCqVxYKEr8Uok0hzbUYs';
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtsd292ZHVldmx3dm9jY3hoYnBtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEzNjE0NTAsImV4cCI6MjEwNjkzNzQ1MH0.f0Mg2MS1asXUHAfic_mEHSHy8YIi7el-eVZHyblAtks';
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: {

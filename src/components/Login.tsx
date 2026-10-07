@@ -71,7 +71,13 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
       if (data?.user) {
         const profileData = await fetchUserProfile(data.user.id);
         if (!profileData) {
+          await supabase.auth.signOut();
           setError('Profil introuvable. Veuillez réessayer.');
+          return;
+        }
+        if (profileData.active === false || profileData.has_account === false) {
+          await supabase.auth.signOut();
+          setError("Ce compte est désactivé. Contactez l'administrateur.");
           return;
         }
         onLogin({
@@ -87,6 +93,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
           percentage:  profileData.percentage,
           dailyRate:   profileData.daily_rate,
           monthlyRate: profileData.monthly_rate,
+          permissions: profileData.permissions || {},
           createdAt:   profileData.created_at,
         });
       }
@@ -147,7 +154,9 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
         session = signInData.session;
       }
 
-      // 3. Load the freshly-created profile and log in.
+      // 3. Load the freshly-created profile and log in. The admin now exists,
+      //    so the "create admin" option is hidden for good.
+      setAdminExists(true);
       const profile = await fetchUserProfile(session.user.id);
       onLogin({
         id:          session.user.id,
@@ -156,6 +165,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
         fullName:    profile?.full_name || fullName.trim(),
         role:        (profile?.role as Role) || 'admin',
         avatar:      profile?.avatar_url,
+        permissions: profile?.permissions || {},
         createdAt:   profile?.created_at || new Date().toISOString(),
       });
     } catch (err: any) {
